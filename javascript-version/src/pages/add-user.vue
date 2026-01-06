@@ -111,6 +111,7 @@ const guardarEmpleado = async () => {
       : await api.post(url, form)
 
     emit('saved')
+
     return res.data
 
   } catch (err) {

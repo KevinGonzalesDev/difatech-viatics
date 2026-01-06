@@ -107,8 +107,6 @@ const isPasswordVisible = ref(false)
                 Solicitar acceso
               </RouterLink>
             </VCol>
-
-
           </VRow>
         </VForm>
       </VCardText>

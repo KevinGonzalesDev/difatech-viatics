@@ -3,15 +3,17 @@ import pool from '../db/db.js'
 
 export const listEmployeesWithRoles = async () => {
   const { rows } = await pool.query(`
-    SELECT
+ SELECT
       e.id,
       e.first_name,
       e.last_name,
       e.email,
       e.active,
+	  e.position,
+	  
 
       COALESCE(
-        ARRAY_AGG(DISTINCT r.name) FILTER (WHERE r.name IS NOT NULL),
+        ARRAY_AGG(DISTINCT r.description) FILTER (WHERE r.description IS NOT NULL),
         '{}'
       ) AS roles,
 
@@ -31,7 +33,7 @@ export const listEmployeesWithRoles = async () => {
 }
 export const getAllRoles = async () => {
   const { rows } = await pool.query(`
-    SELECT id, name
+    SELECT id, name ,description
     FROM roles
     ORDER BY name
   `)

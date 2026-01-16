@@ -6,8 +6,11 @@ import { fileURLToPath } from 'url'
 import employeeRoutes from './routes/employee.routes.js'
 import authRoutes from './routes/auth.routes.js'
 import rolesRoutes from './routes/roles.routes.js'
-import viaticRoutes from './routes/viaticRates.routes.js'
+import viaticRates from './routes/viaticRates.routes.js'
 import locationRoutes from './routes/location.routes.js'
+import proyectsRoutes from './routes/proyects.routes.js'
+import viaticRoutes from './routes/viatic.routes.js'
+import budgetRoutes from './routes/budget.routes.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -33,9 +36,15 @@ app.use('/api/auth', authRoutes)
 
 app.use('/api/roles', rolesRoutes)
 
-app.use('/api/rates', viaticRoutes)
+app.use('/api/rates', viaticRates)
 
 app.use('/api/locations', locationRoutes)
+
+app.use('/api/proyects', proyectsRoutes)
+
+app.use('/api/viatics', viaticRoutes)
+
+app.use('/api/budget', budgetRoutes)
 
 
 app.get('/api/saludo', (req, res) => res.json({ mensaje: 'Hola desde el backend 😎' }))

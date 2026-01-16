@@ -9,10 +9,21 @@ export const listDepartments = async (req, res) => {
     }
 }
 
+
+
 export const listProvinces = async (req, res) => {
     try {
         const provinces = await LocationsModel.ListProvinces()
         res.json({ ok: true, data: provinces })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
+export const addProvince = async (req, res) => {
+    try {
+        const province = await LocationsModel.addProvince(req.body)
+        res.json({ ok: true, data: province })
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message })
     }
@@ -33,6 +44,37 @@ export const listDistrictsWId = async (req, res) => {
         res.json({ ok: true, data: districts })
     } catch (error) {
         res.status(500).json({ ok: false, error: error.message })
+    }
+}
+
+export const listAllDistricts = async (req, res) => {
+    try {
+        const districts = await LocationsModel.ListAllDistricts()
+        res.json({ ok: true, data: districts })
+    } catch (error) {
+        res.status(500).json({ ok: false, error: error.message })
+    }
+}
+
+export const desactivateDepartment = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { active } = req.body
+        const department = await LocationsModel.DesactivateDepartment(id, active)
+        res.json({ ok: true, data: department })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
+export const desactivateProvince = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { active } = req.body
+        const province = await LocationsModel.DesactivateProvince(id, active)
+        res.json({ ok: true, data: province })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
     }
 }
 

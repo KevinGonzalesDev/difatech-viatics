@@ -78,6 +78,17 @@ export const desactivateProvince = async (req, res) => {
     }
 }
 
+export const desactivateDistrict = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { active } = req.body
+        const district = await LocationsModel.desactivateDistrict(id, active)
+        res.json({ ok: true, data: district })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
 
 export const createProvince = async (req, res) => {
     try {
@@ -91,6 +102,26 @@ export const createProvince = async (req, res) => {
 export const createDistrict = async (req, res) => {
     try {
         const district = await LocationsModel.createDistrict(req.body)
+        res.json({ ok: true, data: district })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
+export const editProvince = async (req, res) => {
+    try {
+        const data = req.body
+        const province = await LocationsModel.editProvince(data)
+        res.json({ ok: true, data: province })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
+export const editDistrict = async (req, res) => {
+    try {
+        const data = req.body
+        const district = await LocationsModel.editDistrict(data)
         res.json({ ok: true, data: district })
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message })

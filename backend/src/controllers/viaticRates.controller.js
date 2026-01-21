@@ -18,27 +18,40 @@ export const listViaticrates = async (req, res) => {
     }
 }
 
-export const createRate = async (req, res) => {
+export const createViaticRate = async (req, res) => {
     try {
-        const rate = await ViaticRatesModel.create(req.body)
+        const data = req.body
+        const rate = await ViaticRatesModel.createViaticRate(data)
         res.json({ ok: true, data: rate })
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message })
     }
 }
 
-export const updateRate = async (req, res) => {
+export const updateViaticRate = async (req, res) => {
     try {
-        const rate = await ViaticRatesModel.update(req.params.id, req.body)
+        const data = req.body
+        const rate = await ViaticRatesModel.updateViaticRate(data)
         res.json({ ok: true, data: rate })
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message })
     }
 }
 
-export const deleteRate = async (req, res) => {
+export const desactivateViaticRate = async (req, res) => {
     try {
-        await ViaticRatesModel.remove(req.params.id)
+        const { id } = req.params
+        const { active } = req.body
+        const rate = await ViaticRatesModel.desactivateViaticRate(id, active)
+        res.json({ ok: true, data: rate })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
+export const deleteViaticRate = async (req, res) => {
+    try {
+        await ViaticRatesModel.deleteViaticRate(req.params.id)
         res.status(204).send()
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message })

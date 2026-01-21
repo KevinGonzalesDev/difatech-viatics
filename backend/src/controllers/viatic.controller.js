@@ -39,11 +39,31 @@ export const aprobeViatic = async (req, res) => {
     }
 }
 
+export const rejectViatic = async (req, res) => {
+    try {
+        const data = req.body
+        const rejectedViatic = await ViaticModel.refusedViatic(data)
+        res.json({ ok: true, data: rejectedViatic })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
 export const editsoliViatic = async (req, res) => {
     try {
         const data = req.body
         const editsoliViatic = await ViaticModel.editsoliViatic(data)
         res.json({ ok: true, data: editsoliViatic })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
+export const deleteViatic = async (req, res) => {
+    try {
+        const { viaticId } = req.params
+        const deletedViatic = await ViaticModel.deleteViatic(viaticId)
+        res.json({ ok: true, data: deletedViatic })
     } catch (err) {
         res.status(500).json({ ok: false, error: err.message })
     }

@@ -2,14 +2,25 @@
 import { ref, onMounted } from 'vue'
 import { useConfirm } from '@/composables/useConfirm'
 import api from '@/services/api'
+import {
+  headersBudgetlist,
+  headersdepartmentlist,
+  headersprovincelist,
+  groupProvince,
+  headersdistricts,
+  groupDistrict,
+} from '@/imports/headerstable'
+import buttonComponent from '@/components/buttonComponent.vue'
+import ButtonComponent from '@/components/buttonComponent.vue'
+import AddProvince from './add.province.vue'
+import AddDatacost from './add.datacost.vue'
+import AddDistrict from './add.district.vue'
 
 const confirm = useConfirm()
 
 
 
 const addCostconfig = ref(false)
-const selectedEmployee = ref(null)
-const selectedRoles = ref([])
 
 const dataCost = ref({
   id: null,
@@ -18,43 +29,39 @@ const dataCost = ref({
   districtID: '',
   conceptId: '',
   amount: '',
-  validFrom: '',
-  validTo: '',
   active: true,
 })
 
-const headersCosts = [
-  { title: 'distrito', key: 'district_name' },
-  { title: 'concepto', key: 'concept_description' },
-  { title: 'monto', key: 'amount' },
-  { title: 'estado', key: 'active' },
-  { title: 'Acciones', key: 'actions', sortable: false },
-]
+
+
+// variables de estado del modal de costo
+const showCostModal = ref(false)
+const selectedCost = ref(null)
+const modeCostModal = ref('create') // 'create' o 'edit'
+
+
+// variables de estado del modal de provincia
+const showProvinceModal = ref(false)
+const selectedProvince = ref(null)
+const modeProvinceModal = ref('create') // 'create' o 'edit'
+
+// variables de estado del modal de distritos
+const showDistrictModal = ref(false)
+const selectedDistrict = ref(null)
+const modeDistrictModal = ref('create') // 'create' o 'edit'
 
 
 
-// 👉 donde se guarda la lista
 
 
 const Listcosts = ref([])
-
-const Loadcosts = async () => {
-  try {
-    const { data } = await api.get('/roles')
-
-    Listcosts.value = data.data
-  } catch (err) {
-    console.error(err)
-    alert('No se pudo cargar los empleados')
-  }
-}
-
-const districts = ref([])
-const concepts = ref([])
-const provinces = ref([])
 const departments = ref([])
+const provinces = ref([])
+const districts = ref([])
 
 
+
+// funciones de listado de datos
 const loadDepartments = async () => {
   try {
     const { data } = await api.get('/locations/departments')
@@ -67,88 +74,43 @@ const loadDepartments = async () => {
   }
 }
 
-const loadProvinces = async departmentId => {
+const loadProvinces = async () => {
   try {
-    const { data } = await api.get(`/locations/provinces/department/${departmentId}`)
+    const { data } = await api.get('/locations/provinces')
 
-    provinces.value = data.data || []
+    provinces.value = data.data
+
   } catch (err) {
-    provinces.value = []
     console.error(err)
+    alert('No se pudieron cargar las provincias')
   }
 }
 
-const loadDistricts = async provinceId => {
-  if (!provinceId) {
-    districts.value = []
 
-    return
-  }
+
+const loadDistricts = async provinceId => {
 
   try {
-    const { data } = await api.get(`/locations/provinces/districts/${provinceId}`)
+    const { data } = await api.get(`/locations/districts/`)
 
-    districts.value = data.data || []
+    districts.value = data.data
   } catch (err) {
     districts.value = []
     console.error('Error cargando distritos:', err)
   }
 }
 
-const loadConcepts = async () => {
-  try {
-    const { data } = await api.get('/rates/concepts')
 
-    concepts.value = data.data
 
-  } catch (err) {
-    console.error(err)
-    alert('No se pudieron cargar los conceptos')
-  }
-}
 
-const saveViaticRate = async () => {
-  try {
-    await api.post('/rates', dataCost.value)
 
-    alert('Costo guardado con exito')
-    addCostconfig.value = false
-    Loadcosts()
-  } catch (err) {
-    console.error(err)
-    alert('No se pudo guardar el costo')
-  }
-}
 
-const editCostWId = async (id) => {
-  try {
-    const { data } = await api.put(`/rates/${id}`)
-
-    const rate = data.data
-
-    dataCost.value = {
-      id: rate.id,
-      departmentId: rate.department_id,
-      provinceId: rate.province_id,
-      districtID: rate.district_id,
-      conceptId: rate.concept_id,
-      amount: rate.amount,
-      validFrom: rate.valid_from,
-      validTo: rate.valid_to,
-      active: rate.active,
-    }
-
-    addCostconfig.value = true
-  } catch (err) {
-    console.error(err)
-    alert('No se pudo cargar el costo')
-  }
-}
 
 const listViaticrates = async () => {
   try {
     const { data } = await api.get('/rates')
 
+    console.log('data rates', data)
     Listcosts.value = data.data
   } catch (err) {
     console.error(err)
@@ -156,138 +118,309 @@ const listViaticrates = async () => {
   }
 }
 
-watch(
-  () => dataCost.value.departmentId,
-  async departmentId => {
-    // limpiar cascada
-    provinces.value = []
-    districts.value = []
 
-    dataCost.value.provinceId = null
-    dataCost.value.districtID = null
 
-    if (!departmentId) return
 
-    await loadProvinces(departmentId)
-  },
-)
+// activadores y desacttivadores de estado
+const desactivateDepartment = async (id, active) => {
+  try {
+    await api.put(`/locations/departments/desactivate/${id}`, { active: !active })
 
-watch(
-  () => dataCost.value.provinceId,
-  async provinceId => {
-    districts.value = []
-    dataCost.value.districtID = null
+    alert(`Departamento ${!active ? 'activado' : 'desactivado'} con exito`)
+    await loadDepartments()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo actualizar el estado del departamento')
+  }
+}
 
-    if (!provinceId) return
+const desactivateProvince = async (id, active) => {
+  try {
+    await api.put(`/locations/provinces/desactivate/${id}`, { active: !active })
 
-    await loadDistricts(provinceId)
-  },
-)
+    alert(`Provincia ${!active ? 'activada' : 'desactivada'} con exito`)
+    await loadProvinces()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo actualizar el estado de la provincia')
+  }
+}
+
+const desactivateDistrict = async (id, active) => {
+  try {
+    await api.put(`/locations/districts/desactivate/${id}`, { active: !active })
+
+    alert(`Distrito ${!active ? 'activado' : 'desactivado'} con exito`)
+    await loadDistricts()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo actualizar el estado del distrito')
+  }
+}
+
+const desactivateCost = async (id, active) => {
+  try {
+    await api.put(`/rates/desactivate/${id}`, { active: !active })
+
+    alert(`Costo ${!active ? 'activado' : 'desactivado'} con exito`)
+    await listViaticrates()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo actualizar el estado del costo')
+  }
+}
+
+
+// funciones de estado de modales props
+const editProvinceFunc = async (item) => {
+  // lógica para editar provincia
+  showProvinceModal.value = true
+  modeProvinceModal.value = 'edit'
+  selectedProvince.value = item
+}
+
+const addProvinceFunc = () => {
+  showProvinceModal.value = true
+  modeProvinceModal.value = 'create'
+  selectedProvince.value = null
+}
+
+const editDistrictFunc = async (item) => {
+  // lógica para editar distrito
+  showDistrictModal.value = true
+  modeDistrictModal.value = 'edit'
+  selectedDistrict.value = item
+}
+
+const addDistrictFunc = () => {
+  showDistrictModal.value = true
+  modeDistrictModal.value = 'create'
+  selectedDistrict.value = null
+}
+
+const addDatacostFunc = () => {
+  showCostModal.value = true
+  modeCostModal.value = 'create'
+  selectedCost.value = null
+}
+
+const editDatacostFunc = async (item) => {
+  // lógica para editar costo
+  showCostModal.value = true
+  modeCostModal.value = 'edit'
+  selectedCost.value = item
+}
+
+// funciones de eliminacion de tablas
+const deleteProvinceFunc = async (id) => {
+  // lógica para eliminar provincia
+  const confirmed = await confirm('¿Estás seguro de que deseas eliminar esta provincia? Esta acción no se puede deshacer.')
+
+  if (!confirmed) return
+
+  try {
+    await api.delete(`/locations/provinces/${id}`)
+
+    alert('Provincia eliminada con éxito')
+    await loadProvinces()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo eliminar la provincia')
+  }
+}
+
+const deleteDistrictFunc = async (id) => {
+  // lógica para eliminar distrito
+  const confirmed = await confirm('¿Estás seguro de que deseas eliminar este distrito? Esta acción no se puede deshacer.')
+
+  if (!confirmed) return
+
+  try {
+    await api.delete(`/locations/districts/${id}`)
+
+    alert('Distrito eliminado con éxito')
+    await loadDistricts()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo eliminar el distrito')
+  }
+}
+
+const deleteDatacostFunc = async (id) => {
+  // lógica para eliminar costo
+  const confirmed = await confirm('¿Estás seguro de que deseas eliminar este costo? Esta acción no se puede deshacer.')
+
+  if (!confirmed) return
+
+  try {
+    await api.delete(`/rates/${id}`)
+
+    alert('Costo eliminado con éxito')
+    await listViaticrates()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo eliminar el costo')
+  }
+}
+
+
 
 
 
 onMounted(() => {
   listViaticrates()
-  Loadcosts()
   loadDepartments()
-  loadConcepts()
+  loadProvinces()
+  loadDistricts()
+
 
 })
 </script>
 
 <template>
   <div>
-    <template v-if="addCostconfig">
-      <VRow class="mb-4">
-        <VCol cols="12" md="8" class="d-flex justify-start">
-          Anadir nuevo costo
-        </VCol>
-        <VCol cols="12" md="4" class="d-flex justify-end">
-          <VBtn color="primary" @click="addCostconfig = false">
-            Cancelar
-          </VBtn>
-        </VCol>
-        <VCol cols="12">
-          <VCard>
-            <VCardTitle>
-              <span class="text-h5">Agregar nuevo costo</span>
-            </VCardTitle>
+    <VRow>
+      <VCol cols="12" class="d-flex justify-end mb-4">
+        <VBtn color="primary" @click="addDatacostFunc">
+          Nuevo costo
+        </VBtn>
+      </VCol>
+      <VCol cols="12">
+        <h1 class="text-h4 font-weight-bold mb-0">
+          Lista de presupuestos por destino
+        </h1>
+      </VCol>
+      <VCol cols="12">
+        <VDataTable :headers="headersBudgetlist" :items="Listcosts" item-key="id" class="elevation-1">
+          <template #item.active="{ item }">
+            <VChip color="primary">
+              {{ item.active ? 'Activo' : 'Inactivo' }}
+            </VChip>
+          </template>
 
-            <VCardText>
-              <VForm>
-                <VRow>
-                  <VCol cols="12" md="3">
-                    <VAutocomplete v-model="dataCost.departmentId" label="Departamentos"
-                      placeholder="Seleccione departamento" :items="departments" item-title="name" item-value="id"
-                      clearable />
-                  </VCol>
+          <template #item.actions="{ item }">
+            <ButtonComponent :icon="item.active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+              :tooltip="item.active ? 'Desactivar costo' : 'Activar costo'"
+              @click="desactivateCost(item.id, item.active)" />
 
-                  <VCol cols="12" md="3">
-                    <VAutocomplete v-model="dataCost.provinceId" label="Provincia" placeholder="Seleccione provincia"
-                      :items="provinces" item-title="name" item-value="id" :disabled="!dataCost.departmentId"
-                      clearable />
-                  </VCol>
+            <ButtonComponent icon="ri-pencil-line" tooltip="Editar costo" color="primary"
+              @click="editDatacostFunc(item)" />
 
-                  <VCol cols="12" md="3">
-                    <VAutocomplete v-model="dataCost.districtID" label="Distrito" placeholder="Seleccione distrito"
-                      :items="districts" item-title="name" item-value="id" :disabled="!dataCost.provinceId" />
-                  </VCol>
+            <ButtonComponent icon="ri-delete-bin-line" tooltip="Eliminar costo" color="error"
+              @click="deleteDatacostFunc(item.id)" />
 
-                  <VCol cols="12" md="3">
-                    <VAutocomplete v-model="dataCost.conceptId" label="Concepto" placeholder="Concepto"
-                      :items="concepts" item-title="description" item-value="id" />
-                  </VCol>
+          </template>
+        </VDataTable>
+      </VCol>
+      <VCol cols="12" md="4">
+        <VCard>
+          <VCardTitle>
+            <span class="text-h5">Departamentos permitidos</span>
+          </VCardTitle>
+          <VCardText>
+            <VDataTable density="compact" :headers="headersdepartmentlist" :items="departments" item-key="id"
+              class="elevation-1">
+              <template #item.active="{ item }">
+                <VChip :color="item.active ? 'primary' : 'grey'">
+                  {{ item.active ? 'Activo' : 'Inactivo' }}
+                </VChip>
+              </template>
+              <template #item.actions="{ item }">
+                <ButtonComponent :icon="item.active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+                  :tooltip="item.active ? 'Desactivar departamento' : 'Activar departamento'"
+                  @click="desactivateDepartment(item.id, item.active)" />
+              </template>
+            </VDataTable>
+          </VCardText>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="4">
+        <VCard>
+          <VCardTitle>
+            <VRow dense>
+              <VCol cols="12">
+                <span class="text-h5">Provincias permitidas</span>
+                <ButtonComponent icon="ri-add-circle-line" tooltip="Agregar provincia" color="success"
+                  @click="addProvinceFunc" />
+              </VCol>
+            </VRow>
+          </VCardTitle>
+          <VCardText>
+            <VDataTable :group-by="groupProvince" density="compact" :headers="headersprovincelist" :items="provinces"
+              item-key="id" class="elevation-1">
+              <template #item.active="{ item }">
+                <VChip :color="item.active ? 'primary' : 'grey'">
+                  {{ item.active ? 'Activo' : 'Inactivo' }}
+                </VChip>
+              </template>
 
-                  <VCol cols="12" md="3">
-                    <VTextField v-model="dataCost.amount" label="Monto" placeholder="Monto" type="number" />
-                  </VCol>
-                </VRow>
-              </VForm>
-            </VCardText>
+              <template #item.actions="{ item }">
+                <ButtonComponent :icon="item.active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+                  :tooltip="item.active ? 'Desactivar provincia' : 'Activar provincia'"
+                  @click="desactivateProvince(item.id, item.active)" />
 
-            <VCardActions class="justify-end">
-              <VBtn variant="text" @click="addCostconfig = false">
-                Cancelar
-              </VBtn>
+                <ButtonComponent icon="ri-pencil-line" tooltip="Editar provincia" color="primary"
+                  @click="editProvinceFunc(item)" />
 
-              <VBtn color="primary" @click="saveViaticRate">
-                Guardar costo
-              </VBtn>
-            </VCardActions>
-          </VCard>
-        </VCol>
-      </VRow>
-    </template>
-    <template v-else>
-      <VRow>
-        <VCol cols="12" class="d-flex justify-end mb-4">
-          <VBtn color="primary" @click="addCostconfig = true">
-            Nuevo costo
-          </VBtn>
-        </VCol>
-        <VCol cols="12">
-          <h1 class="text-h4 font-weight-bold mb-0">
-            Lista de precios
-          </h1>
-        </VCol>
-        {{ Listcosts }}
-        <VCol cols="12">
-          <VDataTable :headers="headersCosts" :items="Listcosts" item-key="id" class="elevation-1">
+                <ButtonComponent icon="ri-delete-bin-line" tooltip="Eliminar provincia" color="error"
+                  @click="deleteProvinceFunc(item.id)" />
 
-            <template #item.actions="{ item }">
-              <VBtn icon @click="editCostWId(item.id)">
-                <VIcon icon="ri-pencil-line" />
-              </VBtn>
-            </template>
+              </template>
+            </VDataTable>
+          </VCardText>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="4">
+        <VCard>
+          <VCardTitle>
+            <VRow dense>
+              <VCol cols="12">
+                <span class="text-h5">Distritos permitidos</span>
+                <ButtonComponent icon="ri-add-circle-line" tooltip="Agregar distrito" color="success"
+                  @click="addDistrictFunc" />
+              </VCol>
+            </VRow>
+          </VCardTitle>
+          <VCardText>
+            <VDataTable :group-by="groupDistrict" density="compact" :headers="headersdistricts" :items="districts"
+              item-key="id" class="elevation-1">
+              <template #item.active="{ item }">
+                <VChip :color="item.active ? 'primary' : 'grey'">
+                  {{ item.active ? 'Activo' : 'Inactivo' }}
+                </VChip>
+              </template>
+              <template #item.actions="{ item }">
+                <ButtonComponent :icon="item.active ? 'ri-close-circle-line' : 'ri-checkbox-circle-line'"
+                  :tooltip="item.active ? 'Desactivar distrito' : 'Activar distrito'"
+                  :color="item.active ? 'error' : 'success'" @click="desactivateDistrict(item.id, item.active)" />
 
-            <template #item.active="{ item }">
-              <VChip color="primary">
-                {{ item.active ? 'Activo' : 'Inactivo' }}
-              </VChip>
-            </template>
-          </VDataTable>
-        </VCol>
-      </VRow>
-    </template>
+                <ButtonComponent icon="ri-pencil-line" tooltip="Editar distrito" color="primary"
+                  @click="editDistrictFunc(item)" />
+
+                <ButtonComponent icon="ri-delete-bin-line" tooltip="Eliminar distrito" color="error"
+                  @click="deleteDistrictFunc(item.id)" />
+
+              </template>
+            </VDataTable>
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- modal de provincia para creacion y edicion -->
+
+    <VDialog v-model="showCostModal" max-width="800">
+      <AddDatacost :mode="modeCostModal" :cost="selectedCost" @saved="listViaticrates" @close="showCostModal = false" />
+    </VDialog>
+
+    <VDialog v-model="showProvinceModal" max-width="600">
+      <AddProvince :mode="modeProvinceModal" :province="selectedProvince" @saved="loadProvinces"
+        @close="showProvinceModal = false" />
+    </VDialog>
+
+    <VDialog v-model="showDistrictModal" max-width="600">
+      <AddDistrict :mode="modeDistrictModal" :district="selectedDistrict" @saved="loadDistricts"
+        @close="showDistrictModal = false" />
+    </VDialog>
   </div>
 </template>

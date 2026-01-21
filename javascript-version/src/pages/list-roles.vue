@@ -1,7 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { headersRoles } from '@/imports/headerstable'
+import buttonComponent from '@/components/buttonComponent.vue'
 import api from '@/services/api'
+import ButtonComponent from '@/components/buttonComponent.vue'
 
 const confirm = useConfirm()
 
@@ -11,19 +14,14 @@ const rolUser = ref(false)
 const selectedEmployee = ref(null)
 const selectedRoles = ref([])
 const listallRoles = ref([])
+const employees = ref([])
 
-const headersRoles = [
-  { title: 'name', key: 'name' },
-  { title: 'correo', key: 'email' },
-  { title: 'Rol', key: 'roles' },
-  { title: 'estado', key: 'active' },
-  { title: 'Acciones', key: 'actions', sortable: false },
-]
+
 
 // 👉 donde se guarda la lista
 
 
-const employees = ref([])
+
 
 const loadEmployees = async () => {
   try {
@@ -78,40 +76,6 @@ onMounted(() => {
 <template>
   <div>
     <VRow>
-      <VDialog v-model="rolUser" max-width="600px">
-        <template #activator="{ props }">
-        </template>
-
-        <VCard>
-          <VCardTitle>
-            <span class="text-h5">Editar roles del usuario</span>
-          </VCardTitle>
-          <VCardSubtitle>
-            {{ selectedEmployee?.first_name }} {{ selectedEmployee?.last_name }}
-          </VCardSubtitle>
-
-          <VCardText>
-            <div class="mb-4">
-              <VChip v-if="!selectedEmployee.roles.length" color="grey">
-                Sin roles asignados
-              </VChip>
-            </div>
-
-            <VSelect v-model="selectedRoles" :items="listallRoles" item-title="name" item-value="id" multiple chips />
-          </VCardText>
-
-          <VCardActions class="justify-end">
-            <VBtn variant="text" @click="rolUser = false">
-              Cancelar
-            </VBtn>
-
-            <VBtn color="primary" @click="saveRoles">
-              Guardar roles
-            </VBtn>
-          </VCardActions>
-        </VCard>
-      </VDialog>
-
       <VCol cols="12">
         <h1 class="text-h4 font-weight-bold mb-0">Lista de usuarios y roles</h1>
       </VCol>
@@ -134,9 +98,7 @@ onMounted(() => {
           </template>
 
           <template #item.actions="{ item }">
-            <VBtn icon @click="editrolUser(item)">
-              <VIcon icon="ri-pencil-line" />
-            </VBtn>
+            <ButtonComponent tooltip="Editar rol" icon="ri-pencil-line" @click="editrolUser(item)" />
           </template>
 
           <template #item.active="{ item }">
@@ -147,5 +109,40 @@ onMounted(() => {
         </VDataTable>
       </VCol>
     </VRow>
+
+    <VDialog v-model="rolUser" max-width="600px">
+      <VCard>
+        <VCardTitle>
+          <span class="text-h5">Editar roles del usuario</span>
+        </VCardTitle>
+        <VCardSubtitle>
+          {{ selectedEmployee.first_name }} {{ selectedEmployee.last_name }}
+        </VCardSubtitle>
+
+        <VCardText>
+          <VRow dense>
+            <VCol cols="12">
+              <VChip v-if="!selectedEmployee.roles.length" color="grey">
+                Sin roles asignados
+              </VChip>
+            </VCol>
+            <VCol cols="12">
+              <VSelect v-model="selectedRoles" :items="listallRoles" item-title="description" item-value="id" multiple
+                chips />
+            </VCol>
+          </VRow>
+        </VCardText>
+
+        <VCardActions class="justify-end">
+          <VBtn variant="text" @click="rolUser = false">
+            Cancelar
+          </VBtn>
+
+          <VBtn color="primary" @click="saveRoles">
+            Guardar roles
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>

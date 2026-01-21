@@ -7,6 +7,9 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Appsnackbar: typeof import('./src/components/Appsnackbar.vue')['default']
+    AppSnackbar: typeof import('./src/components/AppSnackbar.vue')['default']
+    ButtonComponent: typeof import('./src/components/buttonComponent.vue')['default']
     CardStatisticsHorizontal: typeof import('./src/@core/components/cards/CardStatisticsHorizontal.vue')['default']
     CardStatisticsVertical: typeof import('./src/@core/components/cards/CardStatisticsVertical.vue')['default']
     CardStatisticsWithImages: typeof import('./src/@core/components/cards/CardStatisticsWithImages.vue')['default']

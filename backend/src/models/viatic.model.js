@@ -4,12 +4,23 @@ export const ViaticModel = {
 
   ListAllViatic: async () => {
     const { rows } = await pool.query(`
-      SELECT viatics.*, first_name AS name, u.last_name AS lastname,
-             c.name AS client_name, l.address AS location_address
-      FROM public.viatics
-      inner JOIN public.employees u ON viatics.user_id = u.id
-      inner JOIN public.clients c ON viatics.client_id = c.id
-      inner JOIN public.client_locations l ON viatics.location_id = l.id
+        SELECT 
+      v.*,
+      u.first_name AS name,
+      u.last_name AS lastname,
+      c.name AS client_name,
+      l.name AS location_name,
+      p.name AS project_name
+    FROM public.viatics v
+    LEFT JOIN public.projects p 
+      ON v.proyect_id = p.id
+    INNER JOIN public.employees u 
+      ON v.user_id = u.id
+    INNER JOIN public.clients c 
+      ON v.client_id = c.id
+    INNER JOIN public.client_locations l 
+      ON v.location_id = l.id
+    ORDER BY v.id DESC;
     `)
     return rows
   },
@@ -76,7 +87,18 @@ export const ViaticModel = {
     return rows[0]
   },
 
+  deleteViatic: async viaticId => {
+    const { rows } = await pool.query(`
+      DELETE FROM public.viatics
+        WHERE id = $1
+      RETURNING *
+    `, [viaticId])
+
+    return rows[0]
+  },
+
   aprobeViatic: async data => {
+    console.log(data);
     const { rows } = await pool.query(`
       UPDATE public.viatics
         SET status = $1, aproved_date = $2 , aproved_userid = $3, proyect_id = $4
@@ -92,4 +114,21 @@ export const ViaticModel = {
 
     return rows[0]
   },
+
+  refusedViatic: async data => {
+    console.log(data);
+
+
+    const { rows } = await pool.query(`
+      UPDATE public.viatics
+        SET status = $1
+        WHERE id = $2
+      RETURNING *
+    `, [
+      'REFUSED',
+      data.viaticId,
+    ])
+
+    return rows[0]
+  }
 }

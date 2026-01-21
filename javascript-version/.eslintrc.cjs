@@ -40,8 +40,6 @@ module.exports = {
 
 
 
-    // indentation (Already present in TypeScript)
-    'indent': ['error', 2],
 
     // Enforce trailing comma (Already present in TypeScript)
     'comma-dangle': ['error', 'always-multiline'],

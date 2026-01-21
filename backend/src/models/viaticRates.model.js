@@ -20,45 +20,55 @@ export const ViaticRatesModel = {
     return rows
   },
 
-  create: async data => {
+
+  createViaticRate: async data => {
     const { rows } = await pool.query(`
       INSERT INTO viatic_rates
-      (district_id, concept_id, amount, active)
-      VALUES ($1, $2, $3, $4)
+      (district_id, concept_id, amount)
+      VALUES ($1, $2, $3)
       RETURNING *
     `, [
-      data.districtID,
+      data.districtId,
       data.conceptId,
       data.amount,
-
-      data.active ?? true,
     ])
 
     return rows[0]
   },
 
-  update: async (id, data) => {
+  updateViaticRate: async (data) => {
+    console.log(data)
     const { rows } = await pool.query(`
       UPDATE viatic_rates SET
-        breakfast = $1,
-        lunch = $2,
-        dinner = $3,
-        mobility = $4,
-        active = $5
-      WHERE id = $6
+        district_id = $1,
+        concept_id = $2,
+        amount = $3
+      WHERE id = $4
       RETURNING *
     `, [
-      data.breakfast,
-      data.lunch,
-      data.dinner,
-      data.mobility,
-      data.active,
-      id,
+      data.districtId,
+      data.conceptId,
+      data.amount,
+      data.id,
     ])
+    console.log(data)
     return rows[0]
   },
 
-  remove: async id => {
+  desactivateViaticRate: async (id, active) => {
+    const { rows } = await pool.query(`
+      UPDATE viatic_rates SET
+        active = $1
+      WHERE id = $2
+      RETURNING *
+    `, [active, id])
+    return rows[0]
+
+  },
+
+
+
+  deleteViaticRate: async id => {
     await pool.query(`DELETE FROM viatic_rates WHERE id = $1`, [id])
   },
 }

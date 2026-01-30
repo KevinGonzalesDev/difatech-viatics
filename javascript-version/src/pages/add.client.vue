@@ -64,7 +64,7 @@ onMounted(() => {
       </VCardTitle>
       <VCardText>
         <VRow>
-          {{ client }}
+          <!-- {{ client }} -->
           <VCol cols="12">
             <p>Ingresa el nombre del nuevo cliente que deseas agregar.</p>
           </VCol>

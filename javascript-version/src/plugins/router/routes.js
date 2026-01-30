@@ -13,6 +13,7 @@ export const routes = [
       { path: 'list-viaticos-user', component: () => import('@/pages/list-myviatics.vue') },
       { path: 'list-viaticos-adm', component: () => import('@/pages/list-adm-viatics.vue') },
       { path: 'list-viaticos-aproved', component: () => import('@/pages/list-aproved-viatics.vue') },
+      { path: 'list-declaration-user', component: () => import('@/pages/list.userDeclaration.vue') },
       { path: 'proyect', component: () => import('@/pages/proyect.vue') },
       { path: 'add-user', component: () => import('@/pages/add-user.vue') },
       { path: 'typography', component: () => import('@/pages/typography.vue') },

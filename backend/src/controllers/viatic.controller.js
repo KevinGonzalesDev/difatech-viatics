@@ -29,6 +29,19 @@ export const ListViaticbyID = async (req, res) => {
     }
 }
 
+export const getViaticcountByUserId = async (req, res) => {
+    try {
+        const { userId } = req.query
+        const { date } = req.query
+        const { excludeId } = req.query
+        console.log('controller', userId, date);
+        const viaticCount = await ViaticModel.getViaticcountByUserId(userId, date, excludeId)
+        res.json({ ok: true, data: viaticCount })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
 export const aprobeViatic = async (req, res) => {
     try {
         const data = req.body
@@ -58,6 +71,8 @@ export const editsoliViatic = async (req, res) => {
         res.status(500).json({ ok: false, error: err.message })
     }
 }
+
+
 
 export const deleteViatic = async (req, res) => {
     try {

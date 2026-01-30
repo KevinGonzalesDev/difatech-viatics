@@ -10,11 +10,7 @@ import VerticalNavLink from '@layouts/components/VerticalNavLink.vue';
     heading: 'Vistas principales',
   }" />
 
-  <VerticalNavLink :item="{
-    title: 'Account Settings',
-    icon: 'ri-user-settings-line',
-    to: '/account-settings',
-  }" />
+
 
   <VerticalNavLink :item="{
     title: 'Lista de Usuarios',
@@ -32,6 +28,12 @@ import VerticalNavLink from '@layouts/components/VerticalNavLink.vue';
     title: 'Mis viaticos',
     icon: 'ri-list-view',
     to: '/list-viaticos-user',
+  }" />
+
+  <VerticalNavLink :item="{
+    title: 'Declaraciones de Usuario',
+    icon: 'ri-file-list-line',
+    to: '/list-declaration-user',
   }" />
 
   <VerticalNavLink :item="{

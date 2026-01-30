@@ -19,10 +19,13 @@ const isEdit = computed(() => props.mode === 'edit')
 
 const districts = ref([])
 const concepts = ref([])
+const frequencyList = ref(['DIARIA', 'FRECUENCIA'])
 
 const dataCostForm = ref({
   districtId: '',
   conceptId: '',
+  frequencyType: 'DIARIA',
+  frequency: 1,
   amount: '',
 })
 
@@ -87,8 +90,9 @@ watch(
     if (!cost) return
 
     dataCostForm.value = {
-      districtId: cost.district_id,
       conceptId: cost.concept_id,
+      frequencyType: cost.frequency_type,
+      frequency: cost.frequency,
       amount: cost.amount,
       id: cost.id,
     }
@@ -112,8 +116,9 @@ onMounted(() => {
         <VForm>
           <VRow>
             <VCol cols="12">
-              <VAutocomplete v-model="dataCostForm.districtId" label="Distrito" placeholder="Seleccione distrito"
-                :items="districts" item-title="name" item-value="id">
+              <!-- {{ cost }} -->
+              <VAutocomplete v-if="!isEdit" v-model="dataCostForm.districtId" label="Distrito"
+                placeholder="Seleccione distrito" :items="districts" item-title="name" item-value="id">
                 <template v-slot:item="{ props, item }">
                   <VListItem v-bind="props" :subtitle="item.raw.province_name" :title="item.raw.name" />
                 </template>
@@ -123,6 +128,15 @@ onMounted(() => {
             <VCol cols="12">
               <VAutocomplete v-model="dataCostForm.conceptId" label="Concepto" placeholder="Concepto" :items="concepts"
                 item-title="description" item-value="id" />
+            </VCol>
+
+            <VCol cols="12">
+              <VSelect v-model="dataCostForm.frequencyType" label="Frecuencia" placeholder="Frecuencia"
+                :items="frequencyList" />
+            </VCol>
+
+            <VCol v-if="dataCostForm.frequencyType != 'DIARIA'" cols="12">
+              <VTextField v-model="dataCostForm.frequency" label="Frecuencia" placeholder="FRECUENCIA" type="number" />
             </VCol>
 
             <VCol cols="12">

@@ -6,7 +6,8 @@ import {
     aprobeViatic,
     editsoliViatic,
     deleteViatic,
-    rejectViatic
+    rejectViatic,
+    getViaticcountByUserId
 
 } from '../controllers/viatic.controller.js'
 
@@ -14,6 +15,7 @@ const router = Router()
 
 router.get('/listallviatics', ListAllViatic)
 router.get('/listviaticbyid/:userId', ListViaticbyID)
+router.get('/count', getViaticcountByUserId)
 router.post('/addviatics', addViatic)
 router.put('/editsoliviatic', editsoliViatic)
 router.delete('/deleteviatic/:viaticId', deleteViatic)

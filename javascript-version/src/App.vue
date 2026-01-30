@@ -4,10 +4,16 @@ import ConfirmDialog from '@/components/modalComponent.vue'
 import AppSnackbar from '@/components/Appsnackbar.vue'
 
 const confirmDialog = ref(null)
-const snackbar = ref(null)
+const snackbarRef = ref(null)
 
-provide('snackbar', snackbar)
+// ✅ Snackbar global
+provide('snackbar', {
+  open: (message, type = 'success') => {
+    snackbarRef.value?.open(message, type)
+  },
+})
 
+// ✅ Confirm dialog global
 provide('confirm', (options) => {
   return confirmDialog.value.open(options)
 })
@@ -16,7 +22,9 @@ provide('confirm', (options) => {
 <template>
   <VApp>
     <RouterView />
+
+    <!-- Global components -->
     <ConfirmDialog ref="confirmDialog" />
-    <AppSnackbar ref="snackbar" />
+    <AppSnackbar ref="snackbarRef" />
   </VApp>
 </template>

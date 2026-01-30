@@ -8,11 +8,13 @@ export const headersRoles = [
 ]
 
 export const headerviaticsUser = [
-    { title: 'ID', key: 'id' },
+    // { title: 'ID', key: 'id' },
+    { title: 'Codigo', key: 'code' },
     { title: 'Empleado', key: 'employee_name' },
     { title: 'Tipo de Viático', key: 'type' },
+    { title: 'Proyecto', key: 'project_name' },
     { title: 'Cliente', key: 'client_name' },
-    { title: 'Ubicación', key: 'location_address' },
+    { title: 'Ubicación', key: 'location_name' },
     { title: 'Fecha Inicio', key: 'startdate' },
     { title: 'Fecha Fin', key: 'enddate' },
     { title: 'Motivo', key: 'soli_reason' },
@@ -22,15 +24,14 @@ export const headerviaticsUser = [
 
 export const headersoliAdmviatics = [
     { title: 'Empleado', key: 'employee_name' },
-    { title: 'Tipo de Viático', key: 'type' },
-    { title: 'Cliente', key: 'client_name' },
-    { title: 'Proyecto', key: 'project_name' },
-    { title: 'Ubicación', key: 'location_name' },
-    { title: 'Fecha Inicio', key: 'startdate' },
-    { title: 'Fecha Fin', key: 'enddate' },
-    { title: 'Motivo', key: 'soli_reason' },
-    { title: 'Estado', key: 'status' },
-    { title: 'Acciones', key: 'actions' },
+    { title: 'Tipo de Viático', align: 'center', key: 'type' },
+    { title: 'Cliente', align: 'center', key: 'client_name' },
+    { title: 'Proyecto', align: 'center', key: 'project_name' },
+    { title: 'Ubicación', align: 'center', key: 'location_name' },
+    { title: 'Fecha Inicio', align: 'center', key: 'startdate' },
+    { title: 'Fecha Fin', align: 'center', key: 'enddate' },
+    { title: 'Estado', align: 'center', key: 'status' },
+    { title: 'Acciones', align: 'center', key: 'actions' },
 ]
 
 export const headersBudgetlist = [
@@ -107,6 +108,40 @@ export const headersBudgetViatics = [
     { title: 'Tipo de Viático', key: 'type' },
     { title: 'Cliente', key: 'client_name' },
     { title: 'Proyecto', key: 'proyect_name' },
+    { title: 'Presupuestado', key: 'budget_total' },
+    { title: 'Saldo', key: 'deposit_amount' },
     { title: 'Estado', key: 'status' },
+    { title: 'Acciones', key: 'actions' },
+]
+
+export const headerCostBudget = [
+    { title: 'Concepto', key: 'concept_name' },
+    { title: 'Tipo', key: 'frequency_type' },
+    { title: 'Frecuencia', key: 'frequency' },
+    { title: 'Monto', key: 'amount' },
+    { title: 'Subtotal', key: 'subtotal' },
+]
+
+export const headersDeclarationsUser = [
+    { title: 'Proyecto', key: 'project_name' },
+    { title: 'Tipo de Viático', key: 'type' },
+    { title: 'Cliente', key: 'client_name' },
+    { title: 'Saldo', key: 'declared_amount' },
+    { title: 'Declarado', key: 'declared_amount' },
+    { title: 'Estado', key: 'status' },
+    { title: 'Acciones', key: 'actions' },
+]
+
+export const headersDepositsList = [
+    { title: 'Codigo', key: 'code' },
+    { title: 'Fecha', key: 'date_deposit' },
+    { title: 'Monto', key: 'amount' },
+    { title: 'Voucher', key: 'voucher' },
+    { title: 'Tipo', key: 'type' },
+    { title: 'Acciones', key: 'actions' },
+]
+
+export const headersConceptsList = [
+    { title: 'Descripción', key: 'description' },
     { title: 'Acciones', key: 'actions' },
 ]

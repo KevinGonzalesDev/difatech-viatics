@@ -9,17 +9,19 @@ import {
   groupProvince,
   headersdistricts,
   groupDistrict,
+  headersConceptsList,
 } from '@/imports/headerstable'
 import buttonComponent from '@/components/buttonComponent.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import AddProvince from './add.province.vue'
 import AddDatacost from './add.datacost.vue'
 import AddDistrict from './add.district.vue'
+import AddConcepts from './add.concepts.vue'
 
 const confirm = useConfirm()
 
 
-
+const ShowconceptList = ref(false)
 const addCostconfig = ref(false)
 
 const dataCost = ref({
@@ -50,14 +52,23 @@ const showDistrictModal = ref(false)
 const selectedDistrict = ref(null)
 const modeDistrictModal = ref('create') // 'create' o 'edit'
 
+// variables de estado de modal de coceptos
+const showConceptModal = ref(false)
+const selectedConcept = ref(null)
+const modeConceptModal = ref('create') // 'create' o 'edit'
 
 
 
+
+const search = ref('')
+const page = ref(1)
+const itemsPerPage = ref(4)
 
 const Listcosts = ref([])
 const departments = ref([])
 const provinces = ref([])
 const districts = ref([])
+const concepts = ref([])
 
 
 
@@ -86,6 +97,17 @@ const loadProvinces = async () => {
   }
 }
 
+const loadConcepts = async () => {
+  try {
+    const { data } = await api.get('/rates/concepts')
+
+    concepts.value = data.data
+
+  } catch (err) {
+    console.error(err)
+    alert('No se pudieron cargar los conceptos')
+  }
+}
 
 
 const loadDistricts = async provinceId => {
@@ -171,7 +193,7 @@ const desactivateCost = async (id, active) => {
 }
 
 
-// funciones de estado de modales props
+// funciones de estado de modales props provincia
 const editProvinceFunc = async (item) => {
   // lógica para editar provincia
   showProvinceModal.value = true
@@ -185,6 +207,7 @@ const addProvinceFunc = () => {
   selectedProvince.value = null
 }
 
+// funciones de estado de modales props distrito
 const editDistrictFunc = async (item) => {
   // lógica para editar distrito
   showDistrictModal.value = true
@@ -198,6 +221,7 @@ const addDistrictFunc = () => {
   selectedDistrict.value = null
 }
 
+// funciones de estado de modales props costo
 const addDatacostFunc = () => {
   showCostModal.value = true
   modeCostModal.value = 'create'
@@ -210,6 +234,21 @@ const editDatacostFunc = async (item) => {
   modeCostModal.value = 'edit'
   selectedCost.value = item
 }
+
+// funciones de estado de modales props concepto
+const addConceptFunc = () => {
+  showConceptModal.value = true
+  modeConceptModal.value = 'create'
+  selectedConcept.value = null
+}
+
+const editConceptFunc = async (item) => {
+  // lógica para editar concepto
+  showConceptModal.value = true
+  modeConceptModal.value = 'edit'
+  selectedConcept.value = item
+}
+
 
 // funciones de eliminacion de tablas
 const deleteProvinceFunc = async (id) => {
@@ -263,6 +302,23 @@ const deleteDatacostFunc = async (id) => {
   }
 }
 
+const deleteConceptFunc = async (id) => {
+  // lógica para eliminar concepto
+  const confirmed = await confirm('¿Estás seguro de que deseas eliminar este concepto? Esta acción no se puede deshacer.')
+
+  if (!confirmed) return
+
+  try {
+    await api.delete(`/rates/concepts/${id}`)
+
+    alert('Concepto eliminado con éxito')
+    await loadConcepts()
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo eliminar el concepto')
+  }
+}
+
 
 
 
@@ -273,44 +329,127 @@ onMounted(() => {
   loadProvinces()
   loadDistricts()
 
-
 })
 </script>
 
 <template>
   <div>
+    <VDialog v-model="ShowconceptList" max-width="600">
+      <VCard>
+        <VCardTitle class="d-flex justify-space-between">
+          <span class="text-h5">Lista de Conceptos</span>
+
+          <ButtonComponent icon="ri-add-circle-line" tooltip="Agregar concepto" color="success"
+            @click="addConceptFunc" />
+
+        </VCardTitle>
+        <VCardText>
+          <VDataTable :headers="headersConceptsList" :items="concepts">
+            <template #item.actions="{ item }">
+              <ButtonComponent icon="ri-pencil-line" tooltip="Editar concepto" color="primary"
+                @click="editConceptFunc(item)" />
+
+              <ButtonComponent icon="ri-delete-bin-line" tooltip="Eliminar concepto" color="error"
+                @click="deleteConceptFunc(item.id)" />
+            </template>
+          </VDataTable>
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn text @click="ShowconceptList = false">Cerrar</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
     <VRow>
       <VCol cols="12" class="d-flex justify-end mb-4">
         <VBtn color="primary" @click="addDatacostFunc">
           Nuevo costo
         </VBtn>
+        <VBtn color="success" class="ml-2" @click="ShowconceptList = true; loadConcepts()">
+          Ver conceptos
+        </VBtn>
       </VCol>
+
       <VCol cols="12">
-        <h1 class="text-h4 font-weight-bold mb-0">
-          Lista de presupuestos por destino
-        </h1>
-      </VCol>
-      <VCol cols="12">
-        <VDataTable :headers="headersBudgetlist" :items="Listcosts" item-key="id" class="elevation-1">
-          <template #item.active="{ item }">
-            <VChip color="primary">
-              {{ item.active ? 'Activo' : 'Inactivo' }}
-            </VChip>
-          </template>
+        <VCard min-height="280">
+          <VCardTitle>
+            <span class="text-h5">Lista de Costos de Viáticos</span>
+          </VCardTitle>
+          <VCardText>
+            <VRow dense>
+              <VCol cols="12">
+                <VTextField v-model="search" label="Buscar distrito o concepto" prepend-inner-icon="ri-search-line"
+                  density="compact" clearable class="mb-4" />
+              </VCol>
+              <VCol cols="12">
+                <VDataIterator :items="Listcosts" v-model:page="page" :items-per-page="itemsPerPage" :search="search">
+                  <template #default="{ items }">
+                    <VRow>
+                      <VCol v-for="district in items" :key="district.raw.district_id" cols="12" md="6">
+                        <VCard>
+                          <!-- Header del distrito -->
+                          <VCardTitle class="d-flex justify-space-between align-center">
+                            <span class="text-h6">
+                              {{ district.raw.district_name }}
+                            </span>
 
-          <template #item.actions="{ item }">
-            <ButtonComponent :icon="item.active ? 'ri-toggle-fill' : 'ri-toggle-line'"
-              :tooltip="item.active ? 'Desactivar costo' : 'Activar costo'"
-              @click="desactivateCost(item.id, item.active)" />
+                            <VBtn size="small" color="primary" prepend-icon="ri-add-line"
+                              @click="addBudget(district.raw)">
+                              Agregar
+                            </VBtn>
+                          </VCardTitle>
 
-            <ButtonComponent icon="ri-pencil-line" tooltip="Editar costo" color="primary"
-              @click="editDatacostFunc(item)" />
+                          <VDivider />
 
-            <ButtonComponent icon="ri-delete-bin-line" tooltip="Eliminar costo" color="error"
-              @click="deleteDatacostFunc(item.id)" />
+                          <!-- Lista de presupuestos -->
+                          <VList density="compact">
+                            <!-- {{ Listcosts }} -->
+                            <VListItem v-for="cost in district.raw.costs" :key="cost.id">
+                              <VListItemTitle>
+                                {{ cost.concept_name }}
+                                <VChip size="small" label class="ml-2">
+                                  {{ cost.frequency_type }}
+                                </VChip>
+                              </VListItemTitle>
 
-          </template>
-        </VDataTable>
+                              <VListItemSubtitle>
+                                S/ {{ cost.amount }}
+                                <VChip v-if="cost.frequency_type != 'DIARIA'" size="small" label class="ml-2">
+                                  Frecuencia :
+                                  {{ cost.frequency }}
+                                </VChip>
+                              </VListItemSubtitle>
+
+                              <template #append>
+                                <ButtonComponent :icon="cost.active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+                                  :tooltip="cost.active ? 'Desactivar costo' : 'Activar costo'"
+                                  @click="desactivateCost(cost.id, cost.active)" />
+
+                                <ButtonComponent icon="ri-pencil-line" tooltip="Editar costo" color="primary"
+                                  @click="editDatacostFunc(cost)" />
+
+                                <ButtonComponent icon="ri-delete-bin-line" tooltip="Eliminar costo" color="error"
+                                  @click="deleteDatacostFunc(cost.id)" />
+
+                              </template>
+                            </VListItem>
+                          </VList>
+                        </VCard>
+                      </VCol>
+                    </VRow>
+                  </template>
+
+                  <template #footer="{ pageCount }">
+                    <div class="d-flex justify-center mt-4">
+                      <VPagination v-model="page" :length="pageCount" size="small" rounded />
+                    </div>
+                  </template>
+                </VDataIterator>
+              </VCol>
+            </VRow>
+          </VCardText>
+        </VCard>
       </VCol>
       <VCol cols="12" md="4">
         <VCard>
@@ -422,5 +561,11 @@ onMounted(() => {
       <AddDistrict :mode="modeDistrictModal" :district="selectedDistrict" @saved="loadDistricts"
         @close="showDistrictModal = false" />
     </VDialog>
+
+    <VDialog v-model="showConceptModal" max-width="600">
+      <AddConcepts :mode="modeConceptModal" :concept="selectedConcept" @saved="loadConcepts"
+        @close="showConceptModal = false" />
+    </VDialog>
+
   </div>
 </template>

@@ -143,7 +143,8 @@ watch(
                 <VRow>
                   <VCol cols="12">
                     <!-- {{ aprovedViatic }} -->
-                    <VSwitch v-model="aproveSwitch" false-value="RECHAZADO" true-value="APROBADO" hide-details>
+                    <VSwitch :label="aproveSwitch" v-model="aproveSwitch" false-value="RECHAZADO" true-value="APROBADO"
+                      hide-details>
                     </VSwitch>
                   </VCol>
                   <VCol cols="12">

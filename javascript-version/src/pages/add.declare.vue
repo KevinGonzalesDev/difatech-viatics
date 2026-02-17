@@ -41,7 +41,6 @@ const Formdeclare = ref({
 
 const typesDocument = ['LIQUIDACION', 'MOVILIDAD', 'DECLARACION_JURADA']
 const paymentMethods = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']
-const categoryList = ['MOVILIDAD', 'ALIMENTACION']
 const listOptions = ref([])
 
 const getOpcionswithType = async type => {
@@ -81,9 +80,17 @@ const addDepositViatic = async () => {
   }
 }
 
+
+
 const isMovilidad = computed(() => {
-  return Formdeclare.value.documentType != 'LIQUIDACION' && Formdeclare.value.optionObject.category === 'MOVILIDAD'
+  return Formdeclare.value.documentType !== 'LIQUIDACION' &&
+    Formdeclare.value.optionObject?.category === 'MOVILIDAD'
 })
+
+const handleDocumentTypeChange = async (newType) => {
+  Formdeclare.value.optionObject = null
+  await getOpcionswithType(newType)
+}
 
 watch(isMovilidad, newVal => {
   if (!newVal) {
@@ -96,17 +103,19 @@ watch(() => Formdeclare.value.documentType, newType => {
   getOpcionswithType(newType)
 })
 
-watch(() => Formdeclare.value.optionObject, newOption => {
-  Formdeclare.value.optionId = newOption ? newOption.id : null
-})
+
+
+const optionId = computed(() => Formdeclare.value.optionObject?.id ?? null)
 
 
 
-onMounted(() => {
-  getOpcionswithType(Formdeclare.value.documentType)
+onMounted(async () => {
+  await getOpcionswithType(Formdeclare.value.documentType)
+
+
 
   if (isEdit.value) {
-    Formdeclare.value = {
+    Object.assign(Formdeclare.value, {
       declareId: props.item.id,
       viaticId: props.viatic,
       documentType: props.item.document_type,
@@ -118,7 +127,8 @@ onMounted(() => {
       category: props.item.category,
       paymentMethod: props.item.payment_method,
       optionObject: props.item.optionobject,
-    }
+    })
+
   }
 })
 </script>
@@ -130,17 +140,13 @@ onMounted(() => {
         {{ isEdit ? 'EDITAR GASTO' : 'AGREGAR GASTO' }}
       </VCardTitle>
       <VCardText>
-        <!-- formdeclare {{ Formdeclare }} -->
-        {{ item }}
+
         <VRow>
           <VCol cols="12" sm="6">
-            <VAutocomplete v-model="Formdeclare.documentType" :items="typesDocument" label="TIPO" outlined dense />
+            <VAutocomplete v-model="Formdeclare.documentType" :items="typesDocument" label="TIPO"
+              @update:model-value="handleDocumentTypeChange" outlined dense />
           </VCol>
-          <!-- <VCol cols="12" sm="6" v-if="Formdeclare.documentType === 'DECLARACION_JURADA'">
-            <VSelect v-model="Formdeclare.category" :items="categoryList" label="Categoria" outlined dense />
-          </VCol> -->
           <VCol cols="12" sm="12">
-            <!-- {{ listOptions }} -->
             <VAutocomplete v-model="Formdeclare.optionObject" :items="listOptions" label="Opciones" outlined dense
               item-value="id" item-title="label" return-object>
               <template v-slot:item="{ props, item }">

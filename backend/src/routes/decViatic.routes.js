@@ -14,6 +14,7 @@ import {
     editViaticDates,
     getViaticPDF,
     getViaticLiquidationPDF,
+    getViaticMovilityPDF,
 
 } from '../controllers/decViatic.controller.js'
 
@@ -34,6 +35,7 @@ router.put('/desactivate/:viaticId', desactivateViaticExpense)
 router.put('/editdates', editViaticDates)
 router.get('/pdf/:viaticId', getViaticPDF)
 router.get('/pdf/liquidation/:viaticId', getViaticLiquidationPDF)
+router.get('/pdf/movility/:viaticId', getViaticMovilityPDF)
 
 
 

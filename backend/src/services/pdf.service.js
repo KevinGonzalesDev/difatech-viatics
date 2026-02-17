@@ -218,6 +218,7 @@ export const generateViaticMovilityPDF = async (data) => {
   // Generar filas dinámicas
 
   let totalMovilidad = 0
+  let totalOtros = 0
 
   data.declarations.forEach(d => {
     switch (d.category) {

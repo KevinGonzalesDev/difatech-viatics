@@ -42,6 +42,9 @@ const generateLiquidationPDF = (id) => {
   window.open(`${import.meta.env.VITE_API_URL}/decviatics/pdf/liquidation/${id}`, '_blank')
 }
 
+const generateMobilityPDF = (id) => {
+  window.open(`${import.meta.env.VITE_API_URL}/decviatics/pdf/movility/${id}`, '_blank')
+}
 
 onMounted(() => {
   loadUserDeclarations()
@@ -57,7 +60,6 @@ onMounted(() => {
           <p>Aquí se mostrarán las declaraciones realizadas por los usuarios.</p>
         </VCol>
         <VCol cols="12">
-          {{ userDeclarationsList }}
           <BaseDatatable :headers="headersDeclarationsUser" :items="userDeclarationsList">
             <template #item.project="{ item }">
               {{ item.proyect_name }}
@@ -82,14 +84,39 @@ onMounted(() => {
             </template>
 
             <template #item.actions="{ item }">
-              <ButtonComponent icon="ri-list-check-3" tooltip="Declarar gasto" @click="viewUserDeclarationFunc(item)" />
+              <ButtonComponent icon="ri-hand-coin-line" tooltip="Declarar gasto"
+                @click="viewUserDeclarationFunc(item)" />
 
-              <VBtn color="primary" @click="generatePDF(item.viatic_id)">
-                Info PDF
-              </VBtn>
-              <VBtn color="primary" @click="generateLiquidationPDF(item.viatic_id)">
-                LIQUIDACION PDF
-              </VBtn>
+              <VMenu>
+                <template v-slot:activator="{ props }">
+                  <ButtonComponent icon="ri-list-unordered" tooltip="Lista de PDFs" variant="text" v-bind="props" />
+                </template>
+
+                <VList>
+                  <template v-slot:prepend>
+                    <v-icon class="mr-n2" size="small"></v-icon>
+                  </template>
+                  <VListItem>
+                    <VListItemTitle>
+                      <VBtn @click="generatePDF(item.viatic_id)" prepend-icon="ri-file-pdf-2-line" variant="plain">
+                        Resumen PDF
+                      </VBtn>
+                    </VListItemTitle>
+                    <VListItemTitle>
+                      <VBtn @click="generateLiquidationPDF(item.viatic_id)" prepend-icon="ri-file-pdf-2-line"
+                        variant="plain">
+                        Liquidación PDF
+                      </VBtn>
+                    </VListItemTitle>
+                    <VListItemTitle>
+                      <VBtn @click="generateMobilityPDF(item.viatic_id)" prepend-icon="ri-file-pdf-2-line"
+                        variant="plain">
+                        Movilidad PDF
+                      </VBtn>
+                    </VListItemTitle>
+                  </VListItem>
+                </VList>
+              </VMenu>
             </template>
           </BaseDatatable>
         </VCol>

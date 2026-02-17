@@ -93,6 +93,8 @@ ORDER BY di.expense_date DESC`, [viaticId])
     },
 
     addViaticExpense: async (data) => {
+        console.log(data);
+
         const { rows } = await pool.query(`
         INSERT INTO public.viatic_expenses (
         viatic_id,
@@ -110,7 +112,7 @@ ORDER BY di.expense_date DESC`, [viaticId])
         RETURNING *`, [
             data.viaticId,
             data.documentType,
-            data.optionId,
+            data.optionObject.id,
             data.documentNumber,
             data.expenseDate,
             data.amount,

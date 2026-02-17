@@ -26,7 +26,7 @@ export const headersoliAdmviatics = [
     { title: 'Empleado', key: 'employee_name' },
     { title: 'Tipo de Viático', align: 'center', key: 'type' },
     { title: 'Cliente', align: 'center', key: 'client_name' },
-    { title: 'Proyecto', align: 'center', key: 'project_name' },
+    { title: 'Proyecto', align: 'left', key: 'project_name' },
     { title: 'Ubicación', align: 'center', key: 'location_name' },
     { title: 'Fecha Inicio', align: 'center', key: 'startdate' },
     { title: 'Fecha Fin', align: 'center', key: 'enddate' },
@@ -104,6 +104,7 @@ export const headersSoliTesoreria = [
 ]
 
 export const headersBudgetViatics = [
+    { title: 'VIATICO', key: 'code' },
     { title: 'Empleado', key: 'employee_name' },
     { title: 'Tipo de Viático', key: 'type' },
     { title: 'Cliente', key: 'client_name' },
@@ -122,15 +123,7 @@ export const headerCostBudget = [
     { title: 'Subtotal', key: 'subtotal' },
 ]
 
-export const headersDeclarationsUser = [
-    { title: 'Proyecto', key: 'project_name' },
-    { title: 'Tipo de Viático', key: 'type' },
-    { title: 'Cliente', key: 'client_name' },
-    { title: 'Saldo', key: 'declared_amount' },
-    { title: 'Declarado', key: 'declared_amount' },
-    { title: 'Estado', key: 'status' },
-    { title: 'Acciones', key: 'actions' },
-]
+
 
 export const headersDepositsList = [
     { title: 'Codigo', key: 'code' },
@@ -145,3 +138,57 @@ export const headersConceptsList = [
     { title: 'Descripción', key: 'description' },
     { title: 'Acciones', key: 'actions' },
 ]
+
+
+export const headersDeclarationsUser = [
+    { title: 'Viatico', key: 'viatic_code' },
+    { title: 'Proyecto', key: 'project' },
+    { title: 'Cliente', key: 'client' },
+    { title: 'Saldo', key: 'balance' },
+    { title: 'Declarado', key: 'declare_amount' },
+    { title: 'Estado', key: 'status' },
+    { title: 'Acciones', key: 'actions' },
+]
+
+export const headersLiquidationsUser = [
+    { title: 'TIPO', key: 'document_type' },
+    { title: 'DOCUMENTO', key: 'document_number' },
+    { title: 'FECHA', key: 'expense_date' },
+    { title: 'DESCRIPCION', key: 'option_name' },
+    { title: 'COSTO', key: 'amount' },
+    { title: 'ACCIONES', key: 'actions', align: 'end' },
+]
+
+export const headersMovilityUser = [
+    { title: 'FECHA', key: 'expense_date' },
+    { title: 'MOTIVO', key: 'option_name' },
+    { title: 'DESDE', key: 'travel_from' },
+    { title: 'HASTA', key: 'travel_to' },
+    { title: 'MONTO', key: 'amount' },
+    { title: 'ACCIONES', key: 'actions', align: 'end' },
+]
+
+export const headersDDJJAlimUser = [
+    { title: 'FECHA', key: 'expense_date' },
+    { title: 'DESCRIPCION', key: 'option_name' },
+    { title: 'MONTO', key: 'amount' },
+    { title: 'ACCIONES', key: 'actions', align: 'end' },
+]
+
+export const headersDDJJMovUser = [
+    { title: 'FECHA', key: 'expense_date' },
+    { title: 'MOTIVO', key: 'option_name' },
+    { title: 'DESDE', key: 'travel_from' },
+    { title: 'HASTA', key: 'travel_to' },
+    { title: 'MONTO', key: 'amount' },
+    { title: 'ACCIONES', key: 'actions', align: 'end' },
+]
+
+export const headersLiquidationConfig = [
+    { title: 'TIPO', key: 'document_type' },
+    { title: 'CATEGORIA', key: 'category' },
+    { title: 'OPCION', key: 'label' },
+    { title: 'ACCIONES', key: 'actions', sortable: false },
+]
+
+export const groupConfigurations = [{ key: 'document_type', order: 'asc' }]

@@ -54,21 +54,26 @@ SELECT viatics.*,
         return rows
     },
 
+
+
     addBudgetViatic: async (data) => {
+        console.log(data);
+
         const client = await pool.connect()
 
         try {
             await client.query('BEGIN')
 
             // 1️⃣ Insertar presupuesto
-            const insertQuery = `
+            const budgetQuery = `
       INSERT INTO public.viatic_budgets
       (viatic_id, district_id, days, aditional, amount_total, created_at)
       VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
+      RETURNING id
+      
     `
 
-            const insertValues = [
+            const budgetValues = [
                 data.viaticId,
                 data.districtId,
                 data.days,
@@ -77,20 +82,36 @@ SELECT viatics.*,
                 data.dateCreated,
             ]
 
-            const { rows } = await client.query(insertQuery, insertValues)
+            const { rows } = await client.query(budgetQuery, budgetValues)
+            const budgetId = rows[0].id
 
-            // 2️⃣ Actualizar estado del viático
-            const updateQuery = `
-      UPDATE public.viatics
-      SET status = 'APROB_TESO'
-      WHERE id = $1
+            // 2️⃣ Insertar detalle (budget_items)
+            const itemQuery = `
+      INSERT INTO public.budget_items
+      (budget_id, concept_id, frequency_type, frequency, amount, subtotal)
+      VALUES ($1, $2, $3, $4, $5, $6)
     `
 
-            await client.query(updateQuery, [data.viaticId])
+            for (const item of data.items) {
+                await client.query(itemQuery, [
+                    budgetId,
+                    item.concept_id,
+                    item.frequency_type,
+                    item.frequency,
+                    item.amount,
+                    item.subtotal,
+                ])
+            }
+
+            // 3️⃣ Actualizar estado del viático
+            await client.query(
+                `UPDATE public.viatics SET status = 'APROB_TESO' WHERE id = $1`,
+                [data.viaticId]
+            )
 
             await client.query('COMMIT')
+            return { budgetId }
 
-            return rows[0]
         } catch (error) {
             await client.query('ROLLBACK')
             throw error
@@ -99,21 +120,83 @@ SELECT viatics.*,
         }
     },
 
-    editBudgetViatic: async (data) => {
+    listBudgetItems: async (budgetId) => {
         const { rows } = await pool.query(`
+       SELECT b.id,
+ 		b.budget_id,
+		b.concept_id,
+		b.frequency_type,
+		b.amount,
+		b.frequency,
+		b.subtotal,
+		vc.description as concept_name
+      FROM public.budget_items b
+      INNER JOIN public.viatic_concepts vc ON b.concept_id = vc.id
+      WHERE b.budget_id = $1
+
+    `, [budgetId])
+        return rows
+    },
+
+    editBudgetViatic: async (data) => {
+        const client = await pool.connect()
+
+        try {
+            await client.query('BEGIN')
+
+            // 1️⃣ Actualizar cabecera
+            await client.query(`
       UPDATE public.viatic_budgets
       SET days = $1,
           aditional = $2,
           amount_total = $3,
           updated_at = NOW()
       WHERE viatic_id = $4
-      RETURNING *
     `, [
-            data.days,
-            data.aditional,
-            data.totalAmount,
-            data.viaticId,
-        ])
-        return rows[0]
+                data.days,
+                data.aditional,
+                data.totalAmount,
+                data.viaticId,
+            ])
+
+            // 2️⃣ Obtener budget_id
+            const { rows } = await client.query(`
+      SELECT id FROM public.viatic_budgets
+      WHERE viatic_id = $1
+    `, [data.viaticId])
+
+            const budgetId = rows[0].id
+
+            // 3️⃣ Borrar detalle anterior
+            await client.query(`
+      DELETE FROM public.budget_items
+      WHERE budget_id = $1
+    `, [budgetId])
+
+            // 4️⃣ Insertar detalle actualizado
+            for (const item of data.items) {
+                await client.query(`
+        INSERT INTO public.budget_items
+        (budget_id, concept_id, frequency_type, frequency, amount, subtotal)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [
+                    budgetId,
+                    item.concept_id,
+                    item.frequency_type,
+                    item.frequency,
+                    item.amount,
+                    item.subtotal,
+                ])
+            }
+
+            await client.query('COMMIT')
+            return { budgetId }
+
+        } catch (err) {
+            await client.query('ROLLBACK')
+            throw err
+        } finally {
+            client.release()
+        }
     }
 }

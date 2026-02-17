@@ -28,9 +28,25 @@ export const ViaticModel = {
 
   ListViaticbyID: async (userId) => {
     const { rows } = await pool.query(`
-      SELECT viatics.*, first_name AS name, u.last_name AS lastname,
-             c.name AS client_name, p.name AS project_name, l.name AS location_name
+      SELECT viatics.*, 
+      first_name AS name,
+      u.last_name AS lastname,
+      c.name AS client_name,
+      p.name AS project_name,
+      l.name AS location_name,
+      b.id as budget_id,
+      b.amount_total AS budget_total,
+      COALESCE(dp.deposit_amount, 0) AS deposit_amount
+
       FROM public.viatics
+
+
+      left join viatic_budgets b on viatics.id = b.viatic_id
+      LEFT JOIN (
+        SELECT viatic_id, SUM(amount) AS deposit_amount
+        FROM public.viatic_deposits
+        GROUP BY viatic_id
+    ) dp ON viatics.id = dp.viatic_id
       inner JOIN public.employees u ON viatics.user_id = u.id
       inner JOIN public.clients c ON viatics.client_id = c.id
       left join public.projects p ON viatics.proyect_id = p.id

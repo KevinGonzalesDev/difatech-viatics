@@ -41,6 +41,23 @@ const openDeleteViaticConfirm = (viaticId) => {
   showConfirm.value = true
 }
 
+const getBudgetStatus = (item) => {
+  const deposited = Number(item.deposit_amount || 0)
+  const budget = Number(item.budget_total || 0)
+
+  if (item.status !== 'APROB_TESO') return null
+
+  if (deposited === 0) {
+    return { text: 'PRESUPUESTADO', color: 'info' }
+  }
+
+  if (deposited < budget) {
+    return { text: 'ABONADO', color: 'error' }
+  }
+
+  return { text: 'ABONADO', color: 'success' }
+}
+
 const closeViaticModal = () => {
   viaticModal.value = false
   selectedViatic.value = null
@@ -119,8 +136,8 @@ onMounted(() => {
             <VChip v-if="item.status === 'REFUSED'" color="error" label="" dark>
               RECHAZADO
             </VChip>
-            <VChip v-if="item.status === 'APROB_TESO'" color="info" label="" dark>
-              PRESUPUESTADO
+            <VChip v-else-if="item.status === 'APROB_TESO'" :color="getBudgetStatus(item).color" label>
+              {{ getBudgetStatus(item).text }}
             </VChip>
           </template>
 

@@ -29,6 +29,16 @@ export const addBudgetViatic = async (req, res) => {
     }
 }
 
+export const listBudgetItems = async (req, res) => {
+    const { budgetId } = req.params
+    try {
+        const items = await BudgetModel.listBudgetItems(budgetId)
+        res.json({ ok: true, data: items })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
 export const editBudgetViatic = async (req, res) => {
     const data = req.body
     try {

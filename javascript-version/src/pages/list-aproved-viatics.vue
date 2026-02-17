@@ -7,6 +7,7 @@ import AddBudget from './add.budget.vue'
 import ListDeposits from './list.deposits.vue'
 
 const approvedViaticList = ref([])
+const search = ref('')
 
 // estados de budgetmodal
 const showBudgetModal = ref(false)
@@ -84,8 +85,12 @@ onMounted(() => {
         <p>Aquí se mostrarán los viáticos que han sido aprobados.</p>
       </VCol>
       <VCol cols="12">
+        <VTextField v-model="search" label="Buscar distrito o concepto" prepend-inner-icon="ri-search-line"
+          density="compact" clearable class="mb-4" />
+      </VCol>
+      <VCol cols="12">
         <!-- {{ approvedViaticList }} -->
-        <VDataTable :headers="headersBudgetViatics" :items="approvedViaticList" class="elevation-1">
+        <VDataTable :headers="headersBudgetViatics" :items="approvedViaticList" class="elevation-1" :search="search">
           <template #item.employee_name="{ item }">
             {{ item.name }} {{ item.lastname }}
           </template>

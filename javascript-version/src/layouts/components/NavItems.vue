@@ -52,12 +52,18 @@ import VerticalNavLink from '@layouts/components/VerticalNavLink.vue';
   <VerticalNavSectionTitle :item="{
     heading: 'App administration',
   }" />
+
+  <VerticalNavLink :item="{
+    title: 'Configuración de liquidacion',
+    icon: 'ri-settings-3-line',
+    to: '/configuration',
+  }" />
+
   <VerticalNavLink :item="{
     title: 'Costos',
     icon: 'ri-currency-line',
     to: '/list-costs',
   }" />
-
   <VerticalNavLink :item="{
     title: 'Clientes y proyectos',
     icon: 'ri-folder-chart-2-line',

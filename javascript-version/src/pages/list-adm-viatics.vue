@@ -104,16 +104,12 @@ onMounted(() => {
           </template>
 
           <template #item.project_name="{ item }">
-            <VRow v-if="item.project_name" dense>
-              <VCol cols="12" class="font-weight-bold">
-                {{ item.project_name }}
-              </VCol>
-              <VCol cols="12" class="font-weight-bold">
-                <VChip color="blue-grey" label dark size="small">
-                  {{ item.project_code }}
-                </VChip>
-              </VCol>
-            </VRow>
+            <div v-if="item.project_name">
+              <span class="d-block mb-1">{{ item.project_name }}</span>
+              <VChip color="blue-grey" label size="x-small">
+                {{ item.project_code }}
+              </VChip>
+            </div>
             <VChip v-else color="grey" label dark>
               SIN PROYECTO
             </VChip>

@@ -32,6 +32,7 @@ const budgetForm = ref({
   totalAmount: 0,
   aditional: 0,
   dateCreated: new Date(),
+  items: [],
 })
 
 const baseTotalCalc = ref(0)   // dinámico
@@ -58,16 +59,29 @@ const calculateDaysFromBackend = (start, end) => {
 
 const loadBudgetbyDistrict = async districtId => {
   try {
-    const { data } = await api.get(`/budget/listCostByDistrict/${districtId}`)
 
+    if (isEdit.value) {
+      // cargar los items del presupuesto existente
+      const { data } = await api.get(`/budget/listBudgetItems/${props.viatic.budget_id}`)
 
-    budgetCosts.value = data.data.map(c => ({
-      ...c,
-      amount: Number(c.amount),
-      frequency: getDefaultUnits(c.frequency_type, c.frequency, budgetForm.value.days),
-      subtotal: 0,
-    }))
+      budgetCosts.value = data.data.map(c => ({
+        ...c,
+        amount: Number(c.amount),
+        frequency: c.frequency,
+        subtotal: 0,
+      }))
 
+      return
+    } else {
+      const { data } = await api.get(`/budget/listCostByDistrict/${districtId}`)
+
+      budgetCosts.value = data.data.map(c => ({
+        ...c,
+        amount: Number(c.amount),
+        frequency: getDefaultUnits(c.frequency_type, c.frequency, budgetForm.value.days),
+        subtotal: 0,
+      }))
+    }
 
   } catch (err) {
     console.error(err)
@@ -79,7 +93,7 @@ const loadBudgetbyDistrict = async districtId => {
 const addBudgetViatic = async () => {
   // lógica para agregar provincia
   try {
-    const payload = { ...budgetForm.value }
+    const payload = { ...budgetForm.value, items: budgetCosts.value }
 
     if (isEdit.value) {
       // Editar provincia
@@ -128,9 +142,9 @@ watch(
 
 
 watch(
-  () => [budgetForm.value.aditional, baseTotalCalc.value, baseTotalLocked.value],
+  () => [budgetForm.value.aditional, baseTotalCalc.value],
   ([aditional, calc, locked]) => {
-    const base = isEdit.value ? locked : calc
+    const base = calc
 
     budgetForm.value.baseTotal = base
     budgetForm.value.totalAmount =
@@ -171,8 +185,7 @@ onMounted(() => {
     budgetForm.value.days = props.viatic.days || 0
     budgetForm.value.aditional = props.viatic.aditional || 0
 
-    baseTotalLocked.value =
-      props.viatic.budget_total - (props.viatic.aditional || 0)
+
 
     budgetForm.value.baseTotal = baseTotalLocked.value
     budgetForm.value.totalAmount = props.viatic.budget_total
@@ -199,8 +212,8 @@ onMounted(() => {
             <VDataTable :items="budgetCosts" :headers="headerCostBudget" density="compact" hide-default-footer>
               <!-- Unidades -->
               <template #item.frequency="{ item }">
-                <VTextField v-model.number="item.frequency" type="number" min="0" density="compact" variant="outlined"
-                  disabled />
+                <VTextField v-model.number="item.frequency" type="number" min="0" density="compact"
+                  variant="outlined" />
               </template>
 
               <!-- Subtotal -->

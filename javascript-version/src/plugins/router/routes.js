@@ -15,6 +15,7 @@ export const routes = [
       { path: 'list-viaticos-aproved', component: () => import('@/pages/list-aproved-viatics.vue') },
       { path: 'list-declaration-user', component: () => import('@/pages/list.userDeclaration.vue') },
       { path: 'proyect', component: () => import('@/pages/proyect.vue') },
+      { path: 'configuration', component: () => import('@/pages/list-liquidation-config.vue') },
       { path: 'add-user', component: () => import('@/pages/add-user.vue') },
       { path: 'typography', component: () => import('@/pages/typography.vue') },
       { path: 'icons', component: () => import('@/pages/icons.vue') },

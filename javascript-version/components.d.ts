@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     Appsnackbar: typeof import('./src/components/Appsnackbar.vue')['default']
     AppSnackbar: typeof import('./src/components/AppSnackbar.vue')['default']
+    BaseDatatable: typeof import('./src/components/BaseDatatable.vue')['default']
     ButtonComponent: typeof import('./src/components/buttonComponent.vue')['default']
     CardStatisticsHorizontal: typeof import('./src/@core/components/cards/CardStatisticsHorizontal.vue')['default']
     CardStatisticsVertical: typeof import('./src/@core/components/cards/CardStatisticsVertical.vue')['default']

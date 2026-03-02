@@ -113,9 +113,9 @@
             </td>
 
             <td style="width:20%" class="code-box">
-            <div><b>Código:</b> AF-FCT-FO-004</div>
+            <div><b>Código:</b> {{NEW_CODE}}</div>
             <div><b>Revisión:</b> 01</div>
-            <div><b>Fecha Rev:</b> 15-08-2025</div>
+            <div><b>Fecha Rev:</b> {{APROV_DATE}}</div>
             <div><b>Página:</b> 1 de 1</div>
             </td>
         </tr>
@@ -132,7 +132,7 @@
                     <div class="bold">LUGAR</div>
                 </td>
                 <td style="width: 60%;">
-                    <div>{{NRO_VIAJE}}</div>
+                    <div>{{NEW_CODE_DESC}}</div>
                     <div>{{CENTRO_COSTO}}</div>
                     <div>{{NOMBRE_COMPLETO}}</div>
                     <div>{{CODIGO_TRABAJADOR}}</div>
@@ -141,10 +141,41 @@
                     <div>{{CLIENT_NAME}} - {{PLANTA_NAME}}</div>
                 </td>
                 <td style="width: 20%;">
-                    <div class="bold">FECHA DE PRESENTACIÓN</div> {{PRESENTATION}}
-                    <div class="bold">ESTADO</div> {{ESTADO}}
-                    <div class="bold">FECHA INICIO</div>{{START_MOV}}
-                    <div class="bold">FECHA FIN</div>{{END_MOV}}
+                    <table>
+                      <tr  class="section-title">
+                        <th style="height: 30px; width: 100%;">
+                          FECHA
+                        </th>
+                      </tr>
+               
+                    </table>
+                    <table>
+                        <tr>
+                        <th>
+                          DIA
+                        </th>
+                        <th>
+                          MES
+                        </th>
+                        <th>
+                          AÑO
+                        </th>
+                      </tr>
+                      <tr>
+                        <td>{{TODAY_DAY}}</td>
+                        <td>{{TODAY_MONTH}}</td>
+                        <td>{{TODAY_YEAR}}</td>
+                      </tr>
+                     
+                    </table>
+                    <table>
+                       <tr>
+                        <td style="width: 100%;">DESDE : {{START_MOV}}</td>
+                      </tr>
+                      <tr>
+                        <td style="width: 100%;">HASTA : {{END_MOV}}</td>
+                      </tr>
+                    </table>
                 </td>
             </tr>
         </table>
@@ -164,6 +195,8 @@
   </tr>
 
   {{DECLARATION_ROWS}}
+
+  {{MOVILITY_DECLARATION_ROWS}}
 
   <tr class="totals">
     <td colspan="3" class="right">TOTALES</td>
@@ -204,11 +237,11 @@
         </tr>
           <tr>
           <td >Total por Liquidar</td>
-          <td class="right">{{TOTAL_DEPOSITS}}</td>
+          <td class="right">{{TOTAL_LIQUIDAR}}</td>
         </tr>
         <tr>
           <td class="bold">Total gastos</td>
-          <td class="right">{{TOTAL_GENERAL}}</td>
+          <td class="right">{{TOTAL_GENERAL_CONTROL}}</td>
         </tr>
         <tr>
           <td >Saldo a favor / devolución</td>

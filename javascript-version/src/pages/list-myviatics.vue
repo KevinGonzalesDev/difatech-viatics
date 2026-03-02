@@ -6,6 +6,7 @@ import AddViatic from './add-viatic.vue'
 import { headerviaticsUser } from '@/imports/headerstable'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import ConfirmDialog from '@/components/modalConfirmation.vue'
+import BaseDatatable from '@/components/BaseDatatable.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
 
 
@@ -22,6 +23,8 @@ const snackbar = useSnackbar()
 
 const viaticList = ref([])
 const user = ref()
+const search = ref('')
+const saludo = ref('')
 
 const openNewViaticModal = () => {
   mode.value = 'create'
@@ -90,6 +93,7 @@ onMounted(() => {
   const storedUser = localStorage.getItem('user')
   if (storedUser) {
     user.value = JSON.parse(storedUser)
+    saludo.value = `Hola, ${user.value.name}`
   }
   ListViaticsbyId()
 })
@@ -107,23 +111,47 @@ onMounted(() => {
 
     <h1>Listado de Viáticos</h1>
     <!-- Aquí va el contenido del listado de viáticos -->
-    <VRow class="mb-4">
-      <VCol cols="12" class="d-flex justify-end">
+    <VRow>
+      <VCol cols="12" class="d-flex justify-space-between align-center">
+        {{ saludo }}
         <VBtn color="primary" @click="openNewViaticModal">Solicitar viatico</VBtn>
       </VCol>
       <VCol cols="12">
         <!-- {{ viaticList }} viáticos encontrados -->
-        <VDataTable :items="viaticList" :headers="headerviaticsUser">
+        <BaseDatatable v-model:search="search" :items="viaticList" :headers="headerviaticsUser">
+
           <template #item.employee_name="{ item }">
-            {{ item.name }} {{ item.lastname }}
+            {{ item.user_name }} {{ item.user_lastname }}
           </template>
 
-          <template #item.startdate="{ item }">
-            {{ new Date(item.start_mov).toLocaleDateString() }}
+          <template #item.project_data="{ item }">
+            <div class="text-title-small">
+              <VChip size="small" color="primary" label>
+                {{ item.project_name }}
+              </VChip>
+              -
+              <VChip size="small" color="secondary" label>
+                {{ item.client_name }}
+              </VChip>
+            </div>
+            <VChip size="small" color="info" label>
+              {{ item.location_name }}
+            </VChip>
           </template>
 
-          <template #item.enddate="{ item }">
-            {{ new Date(item.end_mov).toLocaleDateString() }}
+          <template #item.date_details="{ item }">
+            <VChip size="small" color="secondary" label>
+              Inicio :{{ new Date(item.start_mov).toLocaleDateString() }}
+            </VChip>
+            <VChip size="small" color="secondary" label>
+              Fin : {{ new Date(item.end_mov).toLocaleDateString() }}
+            </VChip>
+            <VChip v-if="item.start_prov_date" size="small" color="info" label>
+              LLeg Prov :{{ new Date(item.start_prov_date).toLocaleDateString() }}
+            </VChip>
+            <VChip v-if="item.end_prov_date" size="small" color="info" label>
+              Sal Prov :{{ new Date(item.end_prov_date).toLocaleDateString() }}
+            </VChip>
           </template>
 
           <template #item.status="{ item }">
@@ -141,21 +169,7 @@ onMounted(() => {
             </VChip>
           </template>
 
-          <template #no-data>
-            <VCard elevation="0" class="d-flex flex-column align-center justify-center ma-6" min-height="200">
-              <VIcon size="48" color="grey-lighten-1" class="mb-2">
-                ri-inbox-line
-              </VIcon>
 
-              <span class="text-grey-darken-1 text-body-1">
-                No hay registros para mostrar
-              </span>
-
-              <span class="text-grey text-caption mt-1">
-                Intenta ajustar los filtros o crea un nuevo registro
-              </span>
-            </VCard>
-          </template>
 
           <template #item.actions="{ item }">
             <ButtonComponent v-if="item.status === 'SOLICITED'" tooltip="Editar solicitud" icon="ri-edit-line"
@@ -164,7 +178,7 @@ onMounted(() => {
             <ButtonComponent v-if="item.status === 'SOLICITED'" icon="ri-delete-bin-line" tooltip="Eliminar viatico"
               @click="openDeleteViaticConfirm(item.id)" />
           </template>
-        </VDataTable>
+        </BaseDatatable>
       </VCol>
     </VRow>
   </div>

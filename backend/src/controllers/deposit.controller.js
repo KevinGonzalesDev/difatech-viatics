@@ -42,6 +42,17 @@ export const getDepositcountByViaticId = async (req, res) => {
     }
 }
 
+export const changeViaticCode = async (req, res) => {
+    const { viaticId } = req.params
+    const { code } = req.body
+    try {
+        const updatedViatic = await DepositModel.editViaticCode(viaticId, code)
+        res.json({ ok: true, data: updatedViatic })
+    } catch (err) {
+        res.status(500).json({ ok: false, error: err.message })
+    }
+}
+
 export const deleteDepositViatic = async (req, res) => {
     const { depositId } = req.params
     try {

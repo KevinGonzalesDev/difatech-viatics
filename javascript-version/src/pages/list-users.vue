@@ -3,22 +3,20 @@ import AddUser from './add-user.vue'
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import { useConfirm } from '@/composables/useConfirm'
+import { useSnackbar } from '@/composables/useSnackbar.js'
+import { headersEmployees } from '@/imports/headerstable.js'
+import BaseDatatable from '@/components/BaseDatatable.vue'
+import ButtonComponent from '@/components/buttonComponent.vue'
+import AccountSettings from './account-settings.vue'
 
 const confirm = useConfirm()
 
+const search = ref('')
 const items = ref([])
 const selectedEmployee = ref(null)
 const newUser = ref(false)
 
-const headersEmployees = [
-  { title: '', key: 'avatar', sortable: false },
-  { title: 'DNI', key: 'dni' },
-  { title: 'Nombres', key: 'full_name' },
-  { title: 'Área', key: 'area' },
-  { title: 'Puesto', key: 'position' },
-  { title: 'Correo', key: 'email' },
-  { title: 'Acciones', key: 'actions', sortable: false },
-]
+
 
 // 👉 donde se guarda la lista
 
@@ -130,7 +128,7 @@ onMounted(() => {
           <h1 class="text-h4 font-weight-bold mb-0">Lista de Usuarios</h1>
         </VCol>
         <VCol cols="12">
-          <VDataTable :headers="headersEmployees" :items="items" item-key="id" class="elevation-1">
+          <BaseDatatable v-model:search="search" :headers="headersEmployees" :items="items">
             <template #item.avatar="{ item }">
               <VAvatar size="36">
                 <VImg v-if="item.avatar_img" :src="'http://localhost:3000' + item.avatar_img" cover />
@@ -145,21 +143,17 @@ onMounted(() => {
             </template>
 
             <template #item.actions="{ item }">
-              <VBtn class="mr-2" icon @click="getemployeeById(item.id)">
-                <VIcon icon="ri-pencil-line" />
-              </VBtn>
-
-              <VBtn icon color="error" @click="deleteEmployee(item)">
-                <VIcon icon="ri-delete-bin-6-line" />
-              </VBtn>
+              <ButtonComponent tooltip="Editar usuario" icon="ri-pencil-line" @click="getemployeeById(item.id)" />
+              <ButtonComponent tooltip="Eliminar usuario" icon="ri-delete-bin-6-line" color="error"
+                @click="deleteEmployee(item)" />
             </template>
-          </VDataTable>
+          </BaseDatatable>
         </VCol>
       </VRow>
     </template>
     <template v-else>
       <VFadeTransition mode="out-in">
-        <AddUser :employee="selectedEmployee" @saved="onSaved" @cancel="onCancel" />
+        <AccountSettings :employee="selectedEmployee" @saved="onSaved" @cancel="onCancel" />
       </VFadeTransition>
     </template>
   </div>

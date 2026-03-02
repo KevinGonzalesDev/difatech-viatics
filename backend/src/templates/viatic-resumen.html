@@ -18,7 +18,7 @@
   }
 
   .container {
-    width: 100%;
+    width: 99%;
     border: 2px solid #000;
   }
 
@@ -140,7 +140,7 @@
         </td>
 
         <td style="width:20%" class="code-box">
-          <div><b>Código:</b> AF-FCT-FO-004</div>
+          <div><b>Código:</b> {{NEW_CODE}}</div>
           <div><b>Revisión:</b> 01</div>
           <div><b>Fecha Rev:</b> 15-08-2025</div>
           <div><b>Página:</b> 1 de 1</div>
@@ -190,23 +190,13 @@
       <span class="label">INICIO MOVILIZACIÓN-LIMA:</span> {{START_MOV}}
     </div>
 
-    <div class="info-line">
-      <span class="label">FECHA LLEGADA A PROVINCIA:</span> {{ARRIVE_DATE}}
-    </div>
-
-    <div class="info-line">
-      <span class="label">FECHA SALIDA DE PROVINCIA:</span> {{EXIT_DATE}}
-    </div>
+    {{PROVINCIA_SECTION}}
 
     <div class="info-line">
       <span class="label">FIN MOVILIZACIÓN-LIMA:</span> {{END_MOV}}
     </div>
 
-    <div class="info-line">
-      <span class="label">REALIZACIÓN DE LA DDJJ:</span>
-      <span class="aceptable">{{DDJJ_ESTADO}}</span>
-    </div>
-
+    {{DDJJ_SECTION}}
   </div>
 
   <!-- TABLA -->

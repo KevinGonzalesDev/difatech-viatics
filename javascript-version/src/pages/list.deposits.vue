@@ -6,6 +6,8 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits(['close', 'cancel'])
+
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import ButtonComponent from '@/components/buttonComponent.vue'
@@ -13,6 +15,7 @@ import { headersDepositsList } from '@/imports/headerstable'
 import ConfirmDialog from '@/components/modalConfirmation.vue'
 import AddDeposit from './add.deposit.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
+
 
 
 const depositList = ref([])
@@ -25,6 +28,16 @@ const mode = ref('create')
 // estados de confirmacion
 const showConfirm = ref(false)
 const depositIdToDelete = ref(null)
+
+const snackbar = useSnackbar()
+
+const viaticDeposit = ref({
+  id: null,
+  code: '',
+  oldcode: '',
+})
+
+const statusNewcode = ref(true)
 
 
 const addDepositFunc = () => {
@@ -55,6 +68,18 @@ const deleteDepositFunc = async () => {
   }
 }
 
+const changeViaticCodeFunc = async () => {
+  if (!viaticDeposit.value.code) return
+  statusNewcode.value = false
+
+
+  const prefix = viaticDeposit.value.code
+
+  const { data } = await api.put(`/deposits/change-code/${viaticDeposit.value.id}`, {
+    code: prefix,
+  })
+}
+
 const ListDeposits = async () => {
   try {
     const { data } = await api.get(`/deposits/find/${props.viatic.id}`)
@@ -68,28 +93,45 @@ const ListDeposits = async () => {
 
 onMounted(() => {
   ListDeposits()
+  viaticDeposit.value.id = props.viatic.id
+  viaticDeposit.value.code = props.viatic.new_code
+  viaticDeposit.value.oldcode = props.viatic.code
 })
 </script>
 
 <template>
   <div>
     <VCard>
-      <VCardTitle>
+      <VCardTitle class="d-flex justify-space-between">
         Lista de Depósitos
+        <ButtonComponent icon="ri-close-circle-line" @click="emit('cancel')" />
       </VCardTitle>
       <VCardText>
-        <VRow>
-          <VCol cols="12" class="d-flex justify-end">
-            <VBtn color="primary" @click="addDepositFunc">
-              Agregar deposito
-            </VBtn>
+        <VRow dense>
+          <VCol cols="12" class="d-flex justify-space-between">
+            <VCol cols="3">
+              <VTextField v-model="viaticDeposit.code" label="Código Viático" type="text"
+                :append-icon="statusNewcode ? 'ri-save-3-line' : 'ri-refresh-line'" @click:append="changeViaticCodeFunc"
+                :hint="viaticDeposit.oldcode" persistent-hint />
+            </VCol>
+            <VCol cols="auto">
+              <VBtn color="primary" @click="addDepositFunc">
+                Agregar deposito
+              </VBtn>
+            </VCol>
           </VCol>
           <VCol cols="12">
             <VDataTable :items="depositList" :headers="headersDepositsList" class="elevation-1">
               <template #item.voucher="{ item }">
                 {{ item.nro_voucher }}
-                <VChip label>
-                  {{ item.entity_financy }}
+              </template>
+
+              <template #item.accounts="{ item }">
+                <VChip label size="x-small">
+                  ORIG: {{ item.origin_account.account_number }} - {{ item.origin_account.bank_name }}
+                </VChip>
+                <VChip label size="x-small">
+                  DEST: {{ item.destiny_account.account_number }} - {{ item.destiny_account.bank_name }}
                 </VChip>
               </template>
 
@@ -116,7 +158,7 @@ onMounted(() => {
 
     <!-- modal de agregar/editar deposito -->
     <VDialog v-model="depositModal" max-width="600">
-      <AddDeposit :mode="mode" :deposit="selectedDeposit" :viatic="viatic.id" @close="depositModal = false"
+      <AddDeposit :mode="mode" :deposit="selectedDeposit" :viatic="viatic" @close="depositModal = false"
         @saved="ListDeposits" />
     </VDialog>
   </div>

@@ -31,7 +31,8 @@ const newProject = {
 
 <template>
   <VRow class="match-height">
-    <VCol cols="12" md="4">
+
+    <!-- <VCol cols="12" md="4">
       <AnalyticsAward />
     </VCol>
 
@@ -77,6 +78,6 @@ const newProject = {
 
     <VCol cols="12">
       <AnalyticsUserTable />
-    </VCol>
+    </VCol> -->
   </VRow>
 </template>

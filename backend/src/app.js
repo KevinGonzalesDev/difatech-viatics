@@ -13,6 +13,8 @@ import viaticRoutes from './routes/viatic.routes.js'
 import budgetRoutes from './routes/budget.routes.js'
 import depositRoutes from './routes/deposit.routes.js'
 import decViaticRoutes from './routes/decViatic.routes.js'
+import companiesRoutes from './routes/companies.routes.js'
+import bankRoutes from './routes/bank.routes.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -52,6 +54,9 @@ app.use('/api/deposits', depositRoutes)
 
 app.use('/api/decviatics', decViaticRoutes)
 
+app.use('/api/companies', companiesRoutes)
+
+app.use('/api/bank', bankRoutes)
 
 app.get('/api/saludo', (req, res) => res.json({ mensaje: 'Hola desde el backend 😎' }))
 

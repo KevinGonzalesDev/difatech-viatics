@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { headersRoles } from '@/imports/headerstable'
-import buttonComponent from '@/components/buttonComponent.vue'
 import api from '@/services/api'
 import ButtonComponent from '@/components/buttonComponent.vue'
 

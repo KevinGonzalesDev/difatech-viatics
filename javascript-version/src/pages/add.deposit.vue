@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, inject } from 'vue'
 import api from '@/services/api'
 import { VDateInput } from 'vuetify/labs/VDateInput'
+import { useSnackbar } from '@/composables/useSnackbar.js'
+import { required, requiredObject } from '@/imports/rulesImport.js'
 
 const props = defineProps({
   deposit: {
@@ -10,7 +12,8 @@ const props = defineProps({
   },
 
   viatic: {
-    type: Number,
+    type: Object,
+    default: () => ({}),
   },
 
   mode: {
@@ -26,13 +29,17 @@ const user = JSON.parse(localStorage.getItem('user')) || {}
 
 const entityList = ref(['BANCO DE LA NACION', 'BANBIF', 'MIBANCO', 'PAYPAL', 'INTERBANK', 'BBVA', 'BCP'])
 const typeDepositList = ref(['ADELANTO', 'ADICIONAL'])
+const originAccountList = ref([''])
+const destinationAccountList = ref([''])
 
 const depositForm = ref({
   depositId: null,
-  viaticId: props.viatic || null,
+  viaticId: props.viatic.id || null,
   amount: 0,
   entityFinancy: '',
   nmrVoucher: '',
+  originAccount: null,
+  destinationAccount: null,
   typeDeposit: '',
   depositDate: new Date(),
   observations: 'Sin observaciones',
@@ -89,7 +96,7 @@ const generateDepositCode = async () => {
 
   const { data } = await api.get('/deposits/count', {
     params: {
-      viaticId: props.viatic,
+      viaticId: props.viatic.viatic_id,
       date: dateISO,
     },
   })
@@ -122,6 +129,21 @@ const addDepositViatic = async () => {
   }
 }
 
+const loadOriginAndDestinationAccounts = async () => {
+  try {
+    const [originRes, destinationRes] = await Promise.all([
+      api.get('/bank/Empresa/1'),
+      api.get('/bank/Empleado/' + props.viatic.user_id),
+    ])
+
+    originAccountList.value = originRes.data.data
+    destinationAccountList.value = destinationRes.data.data
+  } catch (err) {
+    console.error(err)
+    alert('No se pudieron cargar las cuentas')
+  }
+}
+
 watch(
   () => depositForm.value.depositDate,
   (date) => {
@@ -133,12 +155,12 @@ watch(
 )
 
 onMounted(() => {
+  loadOriginAndDestinationAccounts()
   if (isEdit.value) {
     // cargar datos existentes si es modo edición
     depositForm.value.depositId = props.deposit.id || null
     depositForm.value.viaticId = props.deposit.viatic_id || null
     depositForm.value.amount = props.deposit.amount || 0
-    depositForm.value.entityFinancy = props.deposit.entity_financy || ''
     depositForm.value.nmrVoucher = props.deposit.nro_voucher || ''
     depositForm.value.typeDeposit = props.deposit.type || ''
     depositForm.value.depositDate = props.deposit.date_deposit || new Date()
@@ -147,6 +169,8 @@ onMounted(() => {
     depositForm.value.codeDeposit = props.deposit.code || ''
     depositForm.value.createdBy = props.deposit.created_by || user.id || null
     depositForm.value.createdAt = props.deposit.created_at || new Date()
+    depositForm.value.originAccount = props.deposit.origin_account || null
+    depositForm.value.destinationAccount = props.deposit.destiny_account || null
   }
 })
 </script>
@@ -162,11 +186,49 @@ onMounted(() => {
       </VCardTitle>
       <VCardText>
         <VRow>
+          {{ depositForm }} --- IGNORE ---
           <VCol cols="12" md="6">
-            <VTextField v-model="depositForm.amount" label="Monto" type="number" />
+            <VAutocomplete v-model="depositForm.originAccount" item-title="account_number" item-id="id"
+              :items="originAccountList" label="Cuenta Origen" type="text" return-object />
+            <VExpandTransition>
+              <VCard v-if="depositForm.originAccount" class="mt-3 pa-3" variant="tonal">
+                <div class="text-subtitle-1 font-weight-bold">
+                  {{ depositForm.originAccount.bank_name }} -
+                  {{ depositForm.originAccount.currency }}
+                </div>
+
+                <div class="text-body-2 mt-1">
+                  Cuenta: {{ depositForm.originAccount.account_number }}
+                </div>
+
+                <div class="text-body-2">
+                  CCI: {{ depositForm.originAccount.cci }}
+                </div>
+              </VCard>
+            </VExpandTransition>
           </VCol>
           <VCol cols="12" md="6">
-            <VAutocomplete v-model="depositForm.entityFinancy" :items="entityList" label="Entidad" type="text" />
+            <VAutocomplete v-model="depositForm.destinationAccount" item-title="account_number" item-id="id"
+              :items="destinationAccountList" label="Cuenta Destino" type="text" return-object />
+            <VExpandTransition>
+              <VCard v-if="depositForm.destinationAccount" class="mt-3 pa-3" variant="tonal">
+                <div class="text-subtitle-1 font-weight-bold">
+                  {{ depositForm.destinationAccount.bank_name }} -
+                  {{ depositForm.destinationAccount.currency }}
+                </div>
+
+                <div class="text-body-2 mt-1">
+                  Cuenta: {{ depositForm.destinationAccount.account_number }}
+                </div>
+
+                <div class="text-body-2">
+                  CCI: {{ depositForm.destinationAccount.cci }}
+                </div>
+              </VCard>
+            </VExpandTransition>
+          </VCol>
+          <VCol cols="12" md="6">
+            <VTextField v-model="depositForm.amount" label="Monto" type="number" />
           </VCol>
           <VCol cols="12" md="6">
             <VTextField v-model="depositForm.nmrVoucher" label="N° Voucher" type="number" />
@@ -178,7 +240,7 @@ onMounted(() => {
           <VCol cols="12" md="6">
             <VDateInput v-model="depositForm.depositDate" label="Fecha de deposito" />
           </VCol>
-          <VCol cols="12" md="6">
+          <VCol cols="12" md="12">
             <VTextField v-model="depositForm.observations" label="Observaciones" type="text" />
           </VCol>
         </VRow>

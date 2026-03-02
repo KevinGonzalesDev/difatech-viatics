@@ -39,8 +39,12 @@ SELECT viatics.code as viatic_code,
 
     getViaticDetail: async (viaticId) => {
         const { rows } = await pool.query(`
-        SELECT 
+       SELECT 
+        v.id AS viatic_id,
 	  	v.code AS viatic_code,
+        v.new_code AS viatic_new_code,
+		v.type,
+		v.new_code AS viatic_new_code,
 		p.cost_center_code AS cost_center,
 		e.first_name AS user_name,
 		e.last_name AS user_lastname,
@@ -50,8 +54,8 @@ SELECT viatics.code as viatic_code,
 		l.name AS location_name,
 		v.start_mov AS viatic_start,
 		v.end_mov AS viatic_end,
-        v.fecha_salida as fecha_salida,
-		v.fecha_llegada as fecha_llegada
+        v.start_prov_date as start_prov_date,
+		v.end_prov_date as end_prov_date
 	    FROM public.viatics v
 		INNER JOIN projects p on v.proyect_id = p.id 
 		INNER JOIN employees e on v.user_id = e.id
@@ -69,6 +73,7 @@ SELECT viatics.code as viatic_code,
     di.document_type,
     di.document_number,
     di.expense_date,
+    di.expense_real_date,
     di.amount,
     di.travel_from,
     di.travel_to,
@@ -102,19 +107,21 @@ ORDER BY di.expense_date DESC`, [viaticId])
         expense_option_id,
         document_number,
         expense_date,
+        expense_real_date,
         amount,
         payment_method,
         travel_from,
         travel_to,
         is_active)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8,
-        $9, true)
+        $9, $10, true)
         RETURNING *`, [
             data.viaticId,
             data.documentType,
             data.optionObject.id,
             data.documentNumber,
             data.expenseDate,
+            data.expenseRealDate,
             data.amount,
             data.paymentMethod,
             data.travelFrom,
@@ -131,23 +138,23 @@ ORDER BY di.expense_date DESC`, [viaticId])
             expense_option_id = $3,
             document_number = $4,
             expense_date = $5,
-            amount = $6,
-            payment_method = $7,
-            travel_from = $8,
-            travel_to = $9,
-            is_active = $10
+            expense_real_date = $6,
+            amount = $7,
+            payment_method = $8,
+            travel_from = $9,
+            travel_to = $10
         WHERE id = $1
         RETURNING *`, [
             data.declareId,
             data.documentType,
-            data.optionId,
+            data.optionObject.id,
             data.documentNumber,
             data.expenseDate,
+            data.expenseRealDate,
             data.amount,
             data.paymentMethod,
             data.travelFrom,
             data.travelTo,
-            data.is_active
         ])
 
         return rows[0]
@@ -247,6 +254,7 @@ ORDER BY di.expense_date DESC`, [viaticId])
     v.end_mov AS presentation_date,
     e.dni AS codigo_trabajador,
     v.code AS presentacion,
+    v.new_code AS new_code,
     CONCAT(e.first_name, ' ', e.last_name) AS nombre_completo,
     v.status AS estado,
     p.name AS proyect_name,
@@ -255,8 +263,10 @@ ORDER BY di.expense_date DESC`, [viaticId])
     l.name AS planta_name,
     v.start_mov,
     v.end_mov,
-    v.fecha_llegada AS arrive_date,
-    v.fecha_salida AS exit_date,
+    v.type,
+   v.start_prov_date AS arrive_date,
+    v.end_prov_date AS exit_date,
+
 
     (
         SELECT COALESCE(json_agg(
@@ -282,9 +292,10 @@ WHERE v.id = $1`, [viaticId])
 
     getViaticLiquidationData: async (viaticId) => {
         const { rows } = await pool.query(`
-            SELECT 
-        v.code AS nro_viaje,
+       SELECT 
+        v.new_code AS nro_viaje,
         p.cost_center_code AS centro_costo,
+		v.type,
         CONCAT(e.first_name, ' ', e.last_name) AS nombre_completo,
         e.dni AS codigo_trabajador,
         e.area AS area_employ,
@@ -293,6 +304,7 @@ WHERE v.id = $1`, [viaticId])
         l.name AS planta_name,
         v.end_mov AS presentation_date,
         v.status AS estado,
+		v.aproved_date,
         v.start_mov,
         v.end_mov,
 
@@ -317,10 +329,23 @@ WHERE v.id = $1`, [viaticId])
       AND ex.document_type = 'LIQUIDACION'
 ) AS declarations,
 
+(
+    SELECT COALESCE(SUM(ex.amount), 0)
+    FROM viatic_expenses ex
+    INNER JOIN viatic_expense_options o 
+        ON ex.expense_option_id = o.id
+    WHERE ex.viatic_id = v.id 
+      AND ex.document_type = 'MOVILIDAD'
+) AS movility_amount,
+
         (
             SELECT COALESCE(
                 json_agg(
                     json_build_object(
+						'bank_name',ba.bank_name,
+						'origin',ba.account_number,
+						'cci',ba.cci,
+						'currency',ba.currency,
                         'code', d.code,
                         'amount', d.amount
                     )
@@ -328,6 +353,7 @@ WHERE v.id = $1`, [viaticId])
                 '[]'
             )
             FROM viatic_deposits d
+			INNER JOIN bank_accounts ba ON ba.id = d.origin_id
             WHERE d.viatic_id = v.id 
         ) AS deposits
 
@@ -337,8 +363,9 @@ WHERE v.id = $1`, [viaticId])
     INNER JOIN employees e ON v.user_id = e.id
     INNER JOIN projects p ON v.proyect_id = p.id
     INNER JOIN clients c ON p.client_id = c.id
+	
     INNER JOIN client_locations l ON p.location_id = l.id
-    WHERE v.id = $1;`, [viaticId])
+    WHERE v.id = $1`, [viaticId])
 
         return rows[0]
     },

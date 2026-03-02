@@ -7,9 +7,22 @@ import { headersLiquidationConfig, groupConfigurations } from '@/imports/headers
 
 const listConfigurations = ref([])
 
+// variables de estado para el modal de configuración de opciones de documentación
 const showConfigModal = ref(false)
 const selectedConfig = ref(null)
 const modeConfigModal = ref('create')
+
+// variable de estado para el modal de informacion de la empresa
+const showEmpConfigModal = ref(false)
+const selectedEmpConfig = ref(null)
+const modeEmpConfigModal = ref('view')
+
+const infoCompany = ref({
+  name: 'Nombre de la empresa',
+  ruc: 'RUC de la empresa',
+  status: 'active' // o 'inactive'
+})
+
 
 const loadLiquidityConfigs = async () => {
   try {
@@ -43,8 +56,8 @@ onMounted(() => {
 <template>
   <div>
     <VRow>
-      <VCol cols="12">
-        <VCard variant="outlined">
+      <VCol cols="12" md="8">
+        <VCard>
           <VCardTitle class="d-flex justify-space-between">
             Configuración de opciones de documentacion
             <VBtn @click="createConfig">
@@ -58,6 +71,24 @@ onMounted(() => {
                   @click="editConfig(item)" />
               </template>
             </VDataTable>
+          </VCardText>
+        </VCard>
+      </VCol>
+      <VCol cols="12" md="4">
+        <VCard>
+          <VCardTitle>
+            <span class="text-h6">CONFIGURACIONES DE LA EMPRESA</span>
+          </VCardTitle>
+          <VCardText>
+            <div class="d-flex align-center mb-2">
+              <VIcon color="primary" class="me-2">ri-building-fill</VIcon>
+              <span>NOMBRE DE LA EMPRESA :</span>
+
+            </div>
+            <div class="d-flex align-center mb-2">
+              <VIcon color="grey" class="me-2">mdi-circle</VIcon>
+              <span>Configuración inactiva</span>
+            </div>
           </VCardText>
         </VCard>
       </VCol>

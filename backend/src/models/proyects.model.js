@@ -133,6 +133,7 @@ export const ProyectsModel = {
     p.id,
     p.name AS project_name,
     p.active,
+    p.id_companie,
 
     c.id AS client_id,
     c.name AS client_name,
@@ -155,20 +156,20 @@ export const ProyectsModel = {
 
   AddProyect: async (data) => {
     const { rows } = await pool.query(`
-      INSERT INTO public.projects (client_id, location_id, cost_center_code, name)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO public.projects (client_id, location_id, cost_center_code, name, id_companie)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
-    `, [data.clientId, data.locationId, data.costCenter, data.proyectName])
+    `, [data.clientId, data.locationId, data.costCenter, data.proyectName, data.companyId])
     return rows[0]
   },
 
   editProyect: async (data) => {
     const { rows } = await pool.query(`
       UPDATE public.projects
-      SET client_id = $1, location_id = $2, cost_center_code = $3, name = $4
-      WHERE id = $5
+      SET client_id = $1, location_id = $2, cost_center_code = $3, name = $4, id_companie = $5
+      WHERE id = $6
       RETURNING *
-    `, [data.clientId, data.locationId, data.costCenter, data.proyectName, data.id])
+    `, [data.clientId, data.locationId, data.costCenter, data.proyectName, data.companyId, data.id])
     return rows[0]
   },
 

@@ -8,6 +8,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  details: {
+    type: Object,
+    default: () => ({}),
+  },
   mode: {
     type: String,
     default: 'create',
@@ -25,7 +29,7 @@ const isEdit = computed(() => props.mode === 'edit')
 const snackbar = useSnackbar()
 
 const Formdeclare = ref({
-  viaticId: props.viatic,
+  viaticId: props.viatic.viatic_id,
   declareId: null,
   documentType: 'LIQUIDACION',
   optionObject: null,
@@ -33,15 +37,17 @@ const Formdeclare = ref({
   documentNumber: '',
   travelFrom: '',
   travelTo: '',
+  expenseRealDate: new Date(),
   expenseDate: new Date(),
   amount: '',
   category: '',
   paymentMethod: 'EFECTIVO',
 })
 
-const typesDocument = ['LIQUIDACION', 'MOVILIDAD', 'DECLARACION_JURADA']
+const typesDocument = ref([''])
 const paymentMethods = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']
 const listOptions = ref([])
+const details = computed(() => props.details || {})
 
 const getOpcionswithType = async type => {
   try {
@@ -80,7 +86,23 @@ const addDepositViatic = async () => {
   }
 }
 
+const normalizeDate = (date) => {
+  return new Date(date).toISOString().split('T')[0]
+}
 
+const isOutOfRange = (date) => {
+  if (!date || !details.value.viatic_start || !details.value.viatic_end)
+    return false
+
+  const selected = normalizeDate(date)
+  const start = normalizeDate(details.value.viatic_start)
+  const end = normalizeDate(details.value.viatic_end)
+
+
+
+
+  return selected < start || selected > end
+}
 
 const isMovilidad = computed(() => {
   return Formdeclare.value.documentType !== 'LIQUIDACION' &&
@@ -112,17 +134,22 @@ const optionId = computed(() => Formdeclare.value.optionObject?.id ?? null)
 onMounted(async () => {
   await getOpcionswithType(Formdeclare.value.documentType)
 
-
+  if (props.viatic.type === 'LIMA') {
+    typesDocument.value = ['LIQUIDACION', 'MOVILIDAD']
+  } else {
+    typesDocument.value = ['LIQUIDACION', 'MOVILIDAD', 'DECLARACION_JURADA']
+  }
 
   if (isEdit.value) {
     Object.assign(Formdeclare.value, {
       declareId: props.item.id,
-      viaticId: props.viatic,
+      viaticId: props.viatic.viatic_id,
       documentType: props.item.document_type,
       documentNumber: props.item.document_number,
       travelFrom: props.item.travel_from,
       travelTo: props.item.travel_to,
       expenseDate: props.item.expense_date ? new Date(props.item.expense_date) : new Date(),
+      expenseRealDate: props.item.expense_real_date ? new Date(props.item.expense_real_date) : new Date(),
       amount: props.item.amount,
       category: props.item.category,
       paymentMethod: props.item.payment_method,
@@ -140,7 +167,6 @@ onMounted(async () => {
         {{ isEdit ? 'EDITAR GASTO' : 'AGREGAR GASTO' }}
       </VCardTitle>
       <VCardText>
-
         <VRow>
           <VCol cols="12" sm="6">
             <VAutocomplete v-model="Formdeclare.documentType" :items="typesDocument" label="TIPO"
@@ -178,7 +204,17 @@ onMounted(async () => {
           </VCol>
 
           <VCol cols="12" sm="6">
-            <VDateInput v-model="Formdeclare.expenseDate" label="Fecha de Gasto" prepend-icon="" variant="outlined" />
+            <VDateInput v-model="Formdeclare.expenseDate" :error="isOutOfRange(Formdeclare.expenseDate)"
+              :error-messages="isOutOfRange(Formdeclare.expenseDate)
+                ? 'La fecha está fuera del rango del viático'
+                : ''
+                " label="Fecha de facturacion" variant="outlined" />
+          </VCol>
+          <VCol v-if="Formdeclare.documentType === 'LIQUIDACION'" cols="12" sm="6">
+            <VDateInput v-model="Formdeclare.expenseRealDate" :error="isOutOfRange(Formdeclare.expenseRealDate)"
+              :error-messages="isOutOfRange(Formdeclare.expenseRealDate)
+                ? 'La fecha está fuera del rango del viático'
+                : ''" label="Fecha de Gasto" prepend-icon="" variant="outlined" />
           </VCol>
           <VCol cols="12" sm="6">
             <VTextField v-model="Formdeclare.amount" label="Monto" type="number" outlined dense />

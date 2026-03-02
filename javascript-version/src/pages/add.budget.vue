@@ -42,6 +42,8 @@ const baseTotalLocked = ref(0)
 const calculateDaysFromBackend = (start, end) => {
   if (!start || !end) return 0
 
+
+
   const startDate = new Date(start)
   const endDate = new Date(end)
 
@@ -130,11 +132,29 @@ const getDefaultUnits = (frequencyType, frequency, days) => {
 
 
 // calculador de dias basado en fechas
+
+
 watch(
-  () => [selectedViatic.value.start_mov, selectedViatic.value.end_mov],
-  ([start, end]) => {
+  () => [
+    selectedViatic.value.type,
+    selectedViatic.value.start_prov_date,
+    selectedViatic.value.end_prov_date,
+    selectedViatic.value.start_mov,
+    selectedViatic.value.end_mov,
+  ],
+  ([type]) => {
+    let start, end
+
+    if (type === 'LIMA') {
+      start = selectedViatic.value.start_mov
+      end = selectedViatic.value.end_mov
+    } else {
+      start = selectedViatic.value.start_prov_date
+      end = selectedViatic.value.end_prov_date
+    }
 
     if (!start || !end) return
+
     budgetForm.value.days = calculateDaysFromBackend(start, end)
   },
   { immediate: true },
@@ -207,21 +227,8 @@ onMounted(() => {
               {{ budgetForm.baseTotal.toFixed(2) }} (Total base)
             </VChip>
           </VCol>
-          <VCol cols="12" sm="6">
-            <!-- {{ budgetCosts }} -->
-            <VDataTable :items="budgetCosts" :headers="headerCostBudget" density="compact" hide-default-footer>
-              <!-- Unidades -->
-              <template #item.frequency="{ item }">
-                <VTextField v-model.number="item.frequency" type="number" min="0" density="compact"
-                  variant="outlined" />
-              </template>
 
-              <!-- Subtotal -->
-              <template #item.subtotal="{ item }">
-                {{ (item.frequency * item.amount).toFixed(2) }}
-              </template>
-            </VDataTable>
-          </VCol>
+
           <VCol cols="12" sm="6">
             <!-- {{ viatic }} -->
             <VRow dense>
@@ -238,47 +245,79 @@ onMounted(() => {
                           {{ selectedViatic.type }}
                         </VChip>
                       </VCol>
-                      <VCol cols="12"><strong>Cliente:</strong> {{ selectedViatic.client_name }}</VCol>
                       <VCol cols="12">
-                        <strong>Ubicación:</strong>
+                        <VExpandTransition>
+                          <VCard class="mt-3 pa-3" variant="tonal">
+                            <div class="text-subtitle-1 font-weight-bold">
+                              {{ selectedViatic.location_name }} -
+                              {{ selectedViatic.district_name }}
+                            </div>
+
+                            <div class="text-body-2 mt-1">
+                              Cliente: {{ selectedViatic.client_name }}
+                            </div>
+
+                            <div class="text-body-2">
+                              Ubicación: {{ selectedViatic.location_name }} - {{ selectedViatic.district_name }}
+                            </div>
+                          </VCard>
+                        </VExpandTransition>
+                      </VCol>
+
+                      <VCol v-if="selectedViatic.type != 'LIMA'" cols="12" class="d-flex justify-space-between">
                         <VChip label>
-                          {{ selectedViatic.location_name }}
+                          Inicio Prov: {{ new Date(selectedViatic.start_prov_date).toLocaleDateString() }}
                         </VChip>
                         <VChip label>
-                          {{ selectedViatic.district_name }}
+                          Fin Prov: {{ new Date(selectedViatic.end_prov_date).toLocaleDateString() }}
                         </VChip>
                       </VCol>
-                      <VCol cols="12" class="d-flex justify-space-between">
+                      <VCol v-if="selectedViatic.type === 'LIMA'" cols="12" class="d-flex justify-space-between">
                         <VChip label>
-                          Inicio: {{ new Date(selectedViatic.start_mov).toLocaleDateString() }}
+                          Inicio Lim: {{ new Date(selectedViatic.start_mov).toLocaleDateString() }}
                         </VChip>
                         <VChip label>
-                          Fin: {{ new Date(selectedViatic.end_mov).toLocaleDateString() }}
+                          Fin Lim: {{ new Date(selectedViatic.end_mov).toLocaleDateString() }}
                         </VChip>
-                      </VCol>
-                    </VRow>
-                  </VCardText>
-                </VCard>
-              </VCol>
-              <VCol cols="12">
-                <VCard outlined>
-                  <VCardTitle>Asignar presupuesto</VCardTitle>
-                  <VCardText>
-                    <VRow>
-                      <VCol cols="12" sm="6">
-                        <VTextField v-model="budgetForm.days" label="Dias" type="number" readonly />
-                      </VCol>
-                      <VCol cols="12" sm="6">
-                        <VTextField v-model="budgetForm.aditional" label="Adicional" type="number" />
-                      </VCol>
-                      <VCol cols="12">
-                        <VTextField v-model="budgetForm.totalAmount" label="Total" type="number" readonly />
                       </VCol>
                     </VRow>
                   </VCardText>
                 </VCard>
               </VCol>
             </VRow>
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VCard outlined>
+              <VCardTitle>Asignar presupuesto</VCardTitle>
+              <VCardText>
+                <VRow>
+                  <VCol cols="12" sm="6">
+                    <VTextField v-model="budgetForm.days" label="Dias" type="number" readonly />
+                  </VCol>
+                  <VCol cols="12" sm="6">
+                    <VTextField v-model="budgetForm.aditional" label="Adicional" type="number" />
+                  </VCol>
+                  <VCol cols="12">
+                    <VTextField v-model="budgetForm.totalAmount" label="Total" type="number" readonly />
+                  </VCol>
+                </VRow>
+              </VCardText>
+            </VCard>
+          </VCol>
+          <VCol cols="12">
+            <!-- {{ budgetCosts }} -->
+            <VDataTable :items="budgetCosts" :headers="headerCostBudget" density="compact" hide-default-footer>
+              <!-- Unidades -->
+              <template #item.frequency="{ item }">
+                <VTextField v-model.number="item.frequency" type="number" min="0" density="compact"
+                  variant="outlined" />
+              </template>
+
+              <!-- Subtotal -->
+              <template #item.subtotal="{ item }">
+                {{ (item.frequency * item.amount).toFixed(2) }}
+              </template>
+            </VDataTable>
           </VCol>
         </VRow>
       </VCardText>

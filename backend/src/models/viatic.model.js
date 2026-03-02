@@ -4,88 +4,86 @@ export const ViaticModel = {
 
   ListAllViatic: async () => {
     const { rows } = await pool.query(`
-        SELECT 
-      v.*,
-      u.first_name AS name,
-      u.last_name AS lastname,
-      c.name AS client_name,
-      l.name AS location_name,
-      p.name AS project_name,
-      p.cost_center_code AS project_code
-    FROM public.viatics v
-    LEFT JOIN public.projects p 
-      ON v.proyect_id = p.id
-    INNER JOIN public.employees u 
-      ON v.user_id = u.id
-    INNER JOIN public.clients c 
-      ON v.client_id = c.id
-    LEFT JOIN public.client_locations l 
-      ON p.location_id = l.id
-    ORDER BY v.id DESC;
+       SELECT 
+	  v.id,
+	  v.user_id,
+    u.first_name AS user_name,
+    u.last_name AS user_lastname,
+	  v.client_id,
+	  v.proyect_id,
+    p.cost_center_code AS project_code,
+    p.name AS project_name,
+	  l.id AS location_id,
+    l.name AS location_name,
+	  v.type,
+	  v.start_mov,
+	  v.end_mov,
+	  v.start_prov_date,
+	  v.end_prov_date,
+	  v.soli_reason,
+    c.name AS client_name,
+	  v.code,
+	  v.status,
+      b.id as budget_id,
+      b.amount_total AS budget_total,
+      COALESCE(dp.deposit_amount, 0) AS deposit_amount
+      FROM public.viatics v
+      LEFT JOIN viatic_budgets b on v.id = b.viatic_id
+      LEFT JOIN (
+        SELECT viatic_id, SUM(amount) AS deposit_amount
+        FROM public.viatic_deposits
+        GROUP BY viatic_id
+    ) dp ON v.id = dp.viatic_id
+      inner JOIN public.employees u ON v.user_id = u.id
+      inner JOIN public.clients c ON v.client_id = c.id
+      left join public.projects p ON v.proyect_id = p.id
+      left JOIN public.client_locations l ON p.location_id = l.id;
     `)
     return rows
   },
 
   ListViaticbyID: async (userId) => {
     const { rows } = await pool.query(`
-      SELECT viatics.*, 
-      first_name AS name,
-      u.last_name AS lastname,
-      c.name AS client_name,
+     SELECT 
+	  v.id,
+	  v.user_id,
+      u.first_name AS user_name,
+      u.last_name AS user_lastname,
+	  v.client_id,
+	  v.proyect_id,
       p.name AS project_name,
+	  l.id AS location_id,
       l.name AS location_name,
+	  v.type,
+	  v.start_mov,
+	  v.end_mov,
+	  v.start_prov_date,
+	  v.end_prov_date,
+	  v.soli_reason,
+      c.name AS client_name,
+	  v.code,
+	  v.status,
       b.id as budget_id,
       b.amount_total AS budget_total,
       COALESCE(dp.deposit_amount, 0) AS deposit_amount
-
-      FROM public.viatics
-
-
-      left join viatic_budgets b on viatics.id = b.viatic_id
+      FROM public.viatics v
+      LEFT JOIN viatic_budgets b on v.id = b.viatic_id
       LEFT JOIN (
         SELECT viatic_id, SUM(amount) AS deposit_amount
         FROM public.viatic_deposits
         GROUP BY viatic_id
-    ) dp ON viatics.id = dp.viatic_id
-      inner JOIN public.employees u ON viatics.user_id = u.id
-      inner JOIN public.clients c ON viatics.client_id = c.id
-      left join public.projects p ON viatics.proyect_id = p.id
+    ) dp ON v.id = dp.viatic_id
+      inner JOIN public.employees u ON v.user_id = u.id
+      inner JOIN public.clients c ON v.client_id = c.id
+      left join public.projects p ON v.proyect_id = p.id
       left JOIN public.client_locations l ON p.location_id = l.id
-        WHERE user_id = $1
+        WHERE v.user_id = $1
     `, [userId])
     return rows
   },
 
-  editsoliViatic: async data => {
-    const query = `
-    UPDATE public.viatics SET
-      client_id = $1,
-      proyect_id = $2,
-      type = $3,
-      presentation_date = $4,
-      start_mov = $5,
-      end_mov = $6,
-      soli_reason = $7
-    WHERE id = $8
-    RETURNING *`
-
-    const values = [
-      data.clientId,
-      data.projectId,
-      data.type,
-      data.presentationDate,
-      data.startDate,
-      data.endDate,
-      data.soliReason,
-      data.viaticId
-    ]
-
-    const { rows } = await pool.query(query, values)
-    return rows[0]
-  },
 
   getViaticcountByUserId: async (userId, date, excludeId) => {
-    console.log('model', userId, date);
     const { rows } = await pool.query(`
       SELECT COUNT(*) AS viatic_count
       FROM public.viatics
@@ -98,18 +96,22 @@ export const ViaticModel = {
 
 
   addViatic: async data => {
+    console.log(data, 'data viatic en modelo');
+
     const { rows } = await pool.query(`
       INSERT INTO public.viatics
-      (user_id, client_id, proyect_id, type, start_mov, end_mov, soli_reason, status ,presentation_date , code)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8 ,$9 ,$10)
+      (user_id, client_id, proyect_id, type, start_mov, end_mov, start_prov_date, end_prov_date, soli_reason, status ,presentation_date , code)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8 ,$9 ,$10, $11, $12)
       RETURNING *
     `, [
       data.userId,
       data.clientId,
       data.projectId,
       data.type,
-      data.startDate,
-      data.endDate,
+      data.startMovdate,
+      data.endMovdate,
+      data.startProvDate,
+      data.endProvDate,
       data.soliReason,
       'SOLICITED',
       data.presentationDate,
@@ -118,6 +120,39 @@ export const ViaticModel = {
 
     return rows[0]
   },
+
+  editsoliViatic: async data => {
+    const query = `
+    UPDATE public.viatics SET
+      client_id = $1,
+      proyect_id = $2,
+      type = $3,
+      presentation_date = $4,
+      start_mov = $5,
+      end_mov = $6,
+      start_prov_date = $7,
+      end_prov_date = $8,
+      soli_reason = $9
+    WHERE id = $10
+    RETURNING *`
+
+    const values = [
+      data.clientId,
+      data.projectId,
+      data.type,
+      data.presentationDate,
+      data.startMovdate,
+      data.endMovdate,
+      data.startProvDate,
+      data.endProvDate,
+      data.soliReason,
+      data.viaticId
+    ]
+
+    const { rows } = await pool.query(query, values)
+    return rows[0]
+  },
+
 
   deleteViatic: async viaticId => {
     const { rows } = await pool.query(`

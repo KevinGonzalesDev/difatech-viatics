@@ -7,29 +7,42 @@ export const headersRoles = [
     { title: 'Acciones', key: 'actions', sortable: false },
 ]
 
+export const headersEmployees = [
+    { title: '', key: 'avatar', sortable: false },
+    { title: 'DNI', key: 'dni' },
+    { title: 'Nombres', key: 'full_name' },
+    { title: 'Área', key: 'area' },
+    { title: 'Puesto', key: 'position' },
+    { title: 'Correo', key: 'email' },
+    { title: 'Acciones', key: 'actions', sortable: false },
+]
+
+export const headersUsersAccounts = [
+    { title: 'BANCO', key: 'bank_name' },
+    { title: 'CUENTA', key: 'account_number' },
+    { title: 'CCI', key: 'cci' },
+    { title: 'MONEDA', key: 'currency' },
+    { title: 'ACCIONES', key: 'actions', sortable: false },
+]
+
 export const headerviaticsUser = [
     // { title: 'ID', key: 'id' },
     { title: 'Codigo', key: 'code' },
-    { title: 'Empleado', key: 'employee_name' },
+    { title: 'Proyecto', key: 'project_data' },
     { title: 'Tipo de Viático', key: 'type' },
-    { title: 'Proyecto', key: 'project_name' },
-    { title: 'Cliente', key: 'client_name' },
-    { title: 'Ubicación', key: 'location_name' },
-    { title: 'Fecha Inicio', key: 'startdate' },
-    { title: 'Fecha Fin', key: 'enddate' },
+    { title: 'Detalles de Fecha', key: 'date_details' },
     { title: 'Motivo', key: 'soli_reason' },
     { title: 'Estado', key: 'status' },
     { title: 'Acciones', key: 'actions' },
 ]
 
 export const headersoliAdmviatics = [
+    { title: 'Codigo', key: 'code' },
     { title: 'Empleado', key: 'employee_name' },
     { title: 'Tipo de Viático', align: 'center', key: 'type' },
-    { title: 'Cliente', align: 'center', key: 'client_name' },
-    { title: 'Proyecto', align: 'left', key: 'project_name' },
-    { title: 'Ubicación', align: 'center', key: 'location_name' },
-    { title: 'Fecha Inicio', align: 'center', key: 'startdate' },
-    { title: 'Fecha Fin', align: 'center', key: 'enddate' },
+    { title: 'Cliente', align: 'center', key: 'client_data' },
+    { title: 'Proyecto', align: 'left', key: 'proyect_data' },
+    { title: 'Fechas', align: 'left', key: 'date_data' },
     { title: 'Estado', align: 'center', key: 'status' },
     { title: 'Acciones', align: 'center', key: 'actions' },
 ]
@@ -129,6 +142,7 @@ export const headersDepositsList = [
     { title: 'Codigo', key: 'code' },
     { title: 'Fecha', key: 'date_deposit' },
     { title: 'Monto', key: 'amount' },
+    { title: 'Cuentas', key: 'accounts' },
     { title: 'Voucher', key: 'voucher' },
     { title: 'Tipo', key: 'type' },
     { title: 'Acciones', key: 'actions' },

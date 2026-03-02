@@ -4,6 +4,7 @@ import api from '@/services/api'
 import { headersoliAdmviatics } from '@/imports/headerstable'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import ConfirmDialog from '@/components/modalConfirmation.vue'
+import BaseDatatable from '@/components/BaseDatatable.vue'
 
 
 const snackbar = inject('snackbar')
@@ -12,6 +13,8 @@ const user = ref()
 
 const showConfirm = ref(false)
 const showDenied = ref(false)
+
+const search = ref('')
 
 const selectedViatic = ref(null)
 
@@ -98,30 +101,37 @@ onMounted(() => {
       </VCol>
       <VCol cols="12">
         <!-- {{ allviaticList }} -->
-        <VDataTable :items="allviaticList" :headers="headersoliAdmviatics">
+        <BaseDatatable :items="allviaticList" :headers="headersoliAdmviatics" v-model:search="search">
           <template #item.employee_name="{ item }">
-            {{ item.name }} {{ item.lastname }}
+            {{ item.user_name }} {{ item.user_lastname }}
           </template>
 
-          <template #item.project_name="{ item }">
-            <div v-if="item.project_name">
-              <span class="d-block mb-1">{{ item.project_name }}</span>
-              <VChip color="blue-grey" label size="x-small">
-                {{ item.project_code }}
-              </VChip>
-            </div>
-            <VChip v-else color="grey" label dark>
-              SIN PROYECTO
+          <template #item.client_data="{ item }">
+            {{ item.client_name }} {{ item.client_location }}
+          </template>
+
+          <template #item.proyect_data="{ item }">
+            <span class="d-block mb-1">{{ item.project_name }}</span>
+            <VChip color="blue-grey" label size="x-small">
+              {{ item.project_code }}
             </VChip>
           </template>
 
-          <template #item.startdate="{ item }">
-            {{ new Date(item.start_mov).toLocaleDateString() }}
+          <template #item.date_data="{ item }">
+            <VChip size="small" color="secondary" label>
+              Inicio :{{ new Date(item.start_mov).toLocaleDateString() }}
+            </VChip>
+            <VChip size="small" color="secondary" label>
+              Fin : {{ new Date(item.end_mov).toLocaleDateString() }}
+            </VChip>
+            <VChip v-if="item.start_prov_date" size="small" color="info" label>
+              LLeg Prov :{{ new Date(item.start_prov_date).toLocaleDateString() }}
+            </VChip>
+            <VChip v-if="item.end_prov_date" size="small" color="info" label>
+              Sal Prov :{{ new Date(item.end_prov_date).toLocaleDateString() }}
+            </VChip>
           </template>
 
-          <template #item.enddate="{ item }">
-            {{ new Date(item.end_mov).toLocaleDateString() }}
-          </template>
 
           <template #item.status="{ item }">
             <VChip v-if="item.status === 'SOLICITED'" color="primary" label dark>
@@ -151,22 +161,7 @@ onMounted(() => {
 
           </template>
 
-          <template #no-data>
-            <VCard elevation="0" class="d-flex flex-column align-center justify-center ma-6" min-height="200">
-              <VIcon size="48" color="grey-lighten-1" class="mb-2">
-                ri-inbox-line
-              </VIcon>
-
-              <span class="text-grey-darken-1 text-body-1">
-                No hay registros para mostrar
-              </span>
-
-              <span class="text-grey text-caption mt-1">
-                Intenta ajustar los filtros o crea un nuevo registro
-              </span>
-            </VCard>
-          </template>
-        </VDataTable>
+        </BaseDatatable>
       </VCol>
     </VRow>
 

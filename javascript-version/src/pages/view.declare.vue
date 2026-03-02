@@ -50,13 +50,13 @@ const formDate = ref({
 const addDeclareFunc = () => {
   showDeclareModal.value = true
   modeDeclareModal.value = 'create'
-  selectedViatic.value = props.viatic
+  selectedViatic.value = viaticDetails.value
 }
 
 const editDeclareFunc = (item) => {
   showDeclareModal.value = true
   modeDeclareModal.value = 'edit'
-  selectedViatic.value = props.viatic
+  selectedViatic.value = viaticDetails.value
   selectedDeclareViatic.value = item
 }
 
@@ -91,27 +91,6 @@ const openDeleteDeclareConfirm = (declareId) => {
   declareIdToDelete.value = declareId
   showConfirm.value = true
 }
-
-const editDateviaticFunc = async () => {
-  try {
-    const payload = {
-      viaticId: Number(props.viatic),
-      fechaSalida: formDate.value.fechaSalida,
-      fechaLlegada: formDate.value.fechaLlegada,
-    }
-
-    console.log('payload enviado:', payload)
-
-    await api.put(`/decviatics/editdates/`, payload)
-    snackbar.open('fecha actualizada exitosamente', 'success')
-
-    loadViaticDetails()
-  } catch (error) {
-    console.error('Error updating viatic dates:', error)
-    snackbar.open('No se pudieron actualizar las fechas del viaje', 'error')
-  }
-}
-
 
 
 const deleteDeclareFunc = async () => {
@@ -168,34 +147,33 @@ onMounted(() => {
         <VCard>
           <VCardTitle class="text-h5 d-flex justify-space-between">
             Fechas del viaje
-            <ButtonComponent icon="ri-edit-line" tooltip="Editar fechas del viaje" color="primary"
-              @click="Dateformsatatus = !Dateformsatatus" />
           </VCardTitle>
           <VCardText>
-            <strong>FECHA DE INICIO : </strong>
-            {{ viaticDetails?.viatic_start ? new Date(viaticDetails.viatic_start).toLocaleDateString() : '' }}
-            <br>
-            <strong>FECHA DE FIN : </strong>
-            {{ viaticDetails?.viatic_end ? new Date(viaticDetails.viatic_end).toLocaleDateString() : '' }} <br>
-            <strong>FECHA LLEGADA PROVINCIA : </strong>
-            <VDateInput v-if="Dateformsatatus" v-model="formDate.fechaLlegada" prepend-icon=""
-              prepend-inner-icon="$calendar" variant="solo" />
-            <span v-else>
-              {{ viaticDetails?.fecha_llegada ? new Date(viaticDetails.fecha_llegada).toLocaleDateString() : '' }}
-            </span>
-            <br>
-            <strong>FECHA SALIDA PROVINCIA : </strong>
-            <VDateInput v-if="Dateformsatatus" v-model="formDate.fechaSalida" prepend-icon=""
-              prepend-inner-icon="$calendar" variant="solo" />
-            <span v-else>
-              {{ viaticDetails?.fecha_salida ? new Date(viaticDetails.fecha_salida).toLocaleDateString() : '' }}
-            </span>
-            <br>
+            <VListItem>
+              <VListItemTitle>Fecha de Salida</VListItemTitle>
+              <VListItemSubtitle>
+                {{ viaticDetails?.viatic_start ? new Date(viaticDetails.viatic_start).toLocaleDateString() : '' }}
+              </VListItemSubtitle>
+            </VListItem>
+            <VListItem>
+              <VListItemTitle>Fecha de Llegada</VListItemTitle>
+              <VListItemSubtitle>
+                {{ viaticDetails?.viatic_end ? new Date(viaticDetails.viatic_end).toLocaleDateString() : '' }}
+              </VListItemSubtitle>
+            </VListItem>
+            <VListItem v-if="viaticDetails?.start_prov_date && viaticDetails?.end_prov_date">
+              <VListItemTitle>Fecha de Llegada Provincia</VListItemTitle>
+              <VListItemSubtitle>
+                {{ viaticDetails?.start_prov_date ? new Date(viaticDetails.start_prov_date).toLocaleDateString() : '' }}
+              </VListItemSubtitle>
+            </VListItem>
+            <VListItem v-if="viaticDetails?.start_prov_date && viaticDetails?.end_prov_date">
+              <VListItemTitle>Fecha de Salida Provincia</VListItemTitle>
+              <VListItemSubtitle>
+                {{ viaticDetails?.end_prov_date ? new Date(viaticDetails.end_prov_date).toLocaleDateString() : '' }}
+              </VListItemSubtitle>
+            </VListItem>
           </VCardText>
-          <VCardActions class="d-flex justify-end">
-            <ButtonComponent v-if="Dateformsatatus" icon="ri-save-fill" tooltip="Guardar fechas del viaje"
-              color="primary" @click="editDateviaticFunc" />
-          </VCardActions>
         </VCard>
       </VCol>
       <VCol cols="12" class="d-flex justify-end">
@@ -256,8 +234,7 @@ onMounted(() => {
           </VCardText>
         </VCard>
       </VCol>
-
-      <VCol cols="12">
+      <VCol v-if="viaticDetails?.type != 'LIMA'" cols="12">
         <VCard>
           <VCardTitle class="d-flex justify-space-between">
             DECLARACION JURADA
@@ -306,7 +283,7 @@ onMounted(() => {
 
     <VDialog v-model="showDeclareModal" max-width="800px">
       <AddDeclare :mode="modeDeclareModal" :viatic="selectedViatic" :item="selectedDeclareViatic"
-        @saved="loadViaticItems" @close="showDeclareModal = false" />
+        @saved="loadViaticItems" :details="viaticDetails" @close="showDeclareModal = false" />
     </VDialog>
 
     <ConfirmDialog v-model="showConfirm" title="Eliminar depósito"

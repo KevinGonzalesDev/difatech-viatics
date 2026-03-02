@@ -66,27 +66,14 @@ const avatarUrl = computed(() => {
             <template #prepend>
               <VIcon class="me-2" icon="ri-settings-4-line" size="22" />
             </template>
-
             <VListItemTitle>Settings</VListItemTitle>
           </VListItem>
 
           <!-- 👉 Pricing -->
-          <VListItem link>
-            <template #prepend>
-              <VIcon class="me-2" icon="ri-money-dollar-circle-line" size="22" />
-            </template>
 
-            <VListItemTitle>Pricing</VListItemTitle>
-          </VListItem>
 
           <!-- 👉 FAQ -->
-          <VListItem link>
-            <template #prepend>
-              <VIcon class="me-2" icon="ri-question-line" size="22" />
-            </template>
 
-            <VListItemTitle>FAQ</VListItemTitle>
-          </VListItem>
 
           <!-- Divider -->
           <VDivider class="my-2" />

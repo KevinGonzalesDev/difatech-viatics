@@ -18,8 +18,10 @@ import { ref, onMounted } from 'vue'
 
 const clients = ref([])
 const ubications = ref([])
+const companies = ref([])
 
 const proyectForm = ref({
+  companyId: null,
   clientId: null,
   locationId: null,
   costCenter: '',
@@ -45,6 +47,21 @@ const loadUbicationsWid = async () => {
   } catch (err) {
     console.error(err)
     alert('No se pudieron cargar las ubicaciones')
+  }
+}
+
+const loadCompanies = async () => {
+  try {
+    const { data } = await api.get('/companies/select')
+
+    companies.value = data.data
+
+    if (companies.value.length > 0) {
+      proyectForm.value.companyId = companies.value[0].id
+    }
+  } catch (err) {
+    console.error(err)
+    alert('No se pudieron cargar las empresas')
   }
 }
 
@@ -77,6 +94,7 @@ const onClientChange = () => {
 }
 
 onMounted(async () => {
+  loadCompanies()
   await loadClients()
 
   if (isEdit.value) {
@@ -85,6 +103,7 @@ onMounted(async () => {
       locationId: props.proyect.location_id,
       costCenter: props.proyect.cost_center_code,
       proyectName: props.proyect.project_name,
+      companyId: props.proyect.id_companie,
       id: props.proyect.id,
     }
   }
@@ -115,10 +134,13 @@ watch(
       <VCardText>
         <VForm>
           <VRow>
+            <VCol cols="12">
+              <VSelect v-model="proyectForm.companyId" :items="companies" label="Empresa" item-title="short_name"
+                item-value="id" required readonly />
+            </VCol>
             <VCol cols="12" md="6">
               <VAutocomplete v-model="proyectForm.clientId" label="Cliente" :items="clients" item-title="name"
-                item-value="id" @update:model-value="onClientChange">
-              </VAutocomplete>
+                item-value="id" @update:model-value="onClientChange" />
             </VCol>
             <VCol cols="12" md="6">
               <VAutocomplete v-model="proyectForm.locationId" label="Ubicacion(Sede)" :items="ubications"

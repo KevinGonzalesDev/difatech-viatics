@@ -37,8 +37,10 @@ const newViatic = ref({
   clientId: '',
   projectId: '',
   project: null,
-  startDate: new Date(),
-  endDate: new Date(),
+  startMovdate: new Date(),
+  endMovdate: new Date(),
+  startProvDate: null,
+  endProvDate: null,
   soliReason: 'Trabajo asignado por la empresa',
   presentationDate: new Date(),
 })
@@ -87,7 +89,7 @@ const generateViaticCode = async () => {
   const user = JSON.parse(localStorage.getItem('user'))
 
   const initials = getInitials(user.name)
-  const dateCode = formatDateCode(newViatic.value.startDate)
+  const dateCode = formatDateCode(newViatic.value.startMovdate)
 
   const prefix = `LV-${initials}${dateCode}`
 
@@ -95,7 +97,7 @@ const generateViaticCode = async () => {
 
 
 
-  const dateISO = new Date(newViatic.value.startDate)
+  const dateISO = new Date(newViatic.value.startMovdate)
     .toISOString()
     .split('T')[0]
 
@@ -121,6 +123,12 @@ const generateViaticCode = async () => {
 
 
 
+const clearProvincedate = () => {
+  if (newViatic.value.type === 'LIMA') {
+    newViatic.value.startProvDate = null
+    newViatic.value.endProvDate = null
+  }
+}
 
 const loadProyects = async () => {
   try {
@@ -228,20 +236,33 @@ watch(
       userId: Number(viatic.user_id),
       clientId: Number(viatic.client_id),
       projectId: Number(viatic.proyect_id),
+      startMovdate: new Date(viatic.start_mov),
+      endMovdate: new Date(viatic.end_mov),
 
-      startDate: new Date(viatic.start_mov),
-      endDate: new Date(viatic.end_mov),
+      startProvDate: new Date(viatic.start_prov_date),
+      endProvDate: new Date(viatic.end_prov_date),
+
       soliReason: viatic.soli_reason,
       codeViatic: viatic.code,
-      presentationDate: new Date(viatic.presentation_date),
+      presentationDate: new Date(),
     }
   },
   { immediate: true },
 )
 
 watch(
+  () => newViatic.value.type,
+  (value) => {
+    if (value === 'LIMA') {
+      newViatic.value.startProvDate = null
+      newViatic.value.endProvDate = null
+    }
+  },
+)
+
+watch(
   () => [
-    newViatic.value.startDate,
+    newViatic.value.startMovdate,
     newViatic.value.userId,
     isEdit.value,
   ],
@@ -301,26 +322,40 @@ watch(
                     </VListItemSubtitle>
                   </VListItem>
                 </template>
-
-                <template #selection="{ item }">
-                  <div class="d-flex flex-column">
-                    <span class="text-body-1 font-weight-medium">
-                      {{ item.raw.project_name }} - {{ item.raw.cost_center_code }}
-                    </span>
-                    <span class="text-caption">
-                      {{ item.raw.client_name }} · {{ item.raw.location_name }}
-                    </span>
-                  </div>
-                </template>
               </VAutocomplete>
-            </VCol>
 
-            <VCol cols="12" sm="6">
-              <VDateInput v-model="newViatic.startDate" @update:model-value="generateViaticCode" variant="outlined"
-                label="Fecha inicio" :rules="[required]" />
+              <VExpandTransition>
+                <VCard v-if="newViatic.project" class="mt-3 pa-3" variant="tonal">
+                  <div class="text-subtitle-1 font-weight-bold">
+                    {{ newViatic.project.project_name }} -
+                    {{ newViatic.project.cost_center_code }}
+                  </div>
+
+                  <div class="text-body-2 mt-1">
+                    Cliente: {{ newViatic.project.client_name }}
+                  </div>
+
+                  <div class="text-body-2">
+                    Ubicación: {{ newViatic.project.location_name }}
+                  </div>
+                </VCard>
+              </VExpandTransition>
             </VCol>
             <VCol cols="12" sm="6">
-              <VDateInput v-model="newViatic.endDate" :rules="[required]" variant="outlined" label="Fecha fin" />
+              <VDateInput v-model="newViatic.startMovdate" variant="outlined" @update:model-value="generateViaticCode"
+                label="Fecha inicio viaje" :rules="[required]" />
+            </VCol>
+            <VCol cols="12" sm="6">
+              <VDateInput v-model="newViatic.endMovdate" :rules="[required]" variant="outlined"
+                label="Fecha fin viaje" />
+            </VCol>
+            <VCol v-if="newViatic.type === 'PROVINCIA'" cols="12" sm="6">
+              <VDateInput v-model="newViatic.startProvDate" variant="outlined" label="Fecha llegada provincia"
+                :rules="[required]" />
+            </VCol>
+            <VCol v-if="newViatic.type === 'PROVINCIA'" cols="12" sm="6">
+              <VDateInput v-model="newViatic.endProvDate" :rules="[required]" variant="outlined"
+                label="Fecha salida provincia" />
             </VCol>
           </VRow>
         </VCardText>

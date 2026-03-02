@@ -6,22 +6,29 @@ defineProps({
   tabletitle: String,
   itemKey: {
     type: String,
-    default: 'id'
+    default: 'id',
   },
+  search: String,
 })
+
+const emit = defineEmits(['update:search'])
 </script>
 
 <template>
   <div>
     <VRow>
-      <VCol cols="12">
+      <VCol v-if="tabletitle" cols="12">
         <h2 class="text-h5 font-weight-medium mb-4">
           {{ tabletitle }}
         </h2>
       </VCol>
       <VCol cols="12">
+        <VTextField @update:model-value="val => emit('update:search', val)" label="Buscar..." variant="outlined"
+          clearable class="mb-4" />
+      </VCol>
+      <VCol cols="12">
         <VDataTable :headers="headers" :items="items" :loading="loading" :item-key="itemKey"
-          class="elevation-1 custom-table">
+          class="elevation-1 custom-table" :search="search">
           <!-- Slot dinámico para cualquier columna -->
           <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
             <slot :name="slotName" v-bind="slotProps" />

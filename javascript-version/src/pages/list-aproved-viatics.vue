@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import { headersBudgetViatics } from '@/imports/headerstable'
+import BaseDatatable from '@/components/BaseDatatable.vue'
 import AddBudget from './add.budget.vue'
 import ListDeposits from './list.deposits.vue'
 
@@ -58,6 +59,11 @@ const getBudgetStatus = (item) => {
   return { text: 'ABONADO', color: 'success' }
 }
 
+const cancelFunc = () => {
+  showBudgetModal.value = false
+  showListDepositsModal.value = false
+  ListApprovedViatics()
+}
 
 
 const ListApprovedViatics = async () => {
@@ -84,13 +90,19 @@ onMounted(() => {
         <h1>Viáticos Aprobados</h1>
         <p>Aquí se mostrarán los viáticos que han sido aprobados.</p>
       </VCol>
-      <VCol cols="12">
-        <VTextField v-model="search" label="Buscar distrito o concepto" prepend-inner-icon="ri-search-line"
-          density="compact" clearable class="mb-4" />
-      </VCol>
+
       <VCol cols="12">
         <!-- {{ approvedViaticList }} -->
-        <VDataTable :headers="headersBudgetViatics" :items="approvedViaticList" class="elevation-1" :search="search">
+        <BaseDatatable :items="approvedViaticList" :headers="headersBudgetViatics" v-model:search="search">
+          <template #item.code="{ item }">
+            <VChip label size="x-small">
+              {{ item.code }}
+            </VChip>
+            <VChip v-if="item.new_code" label size="x-small" color="info">
+              {{ item.new_code }}
+            </VChip>
+          </template>
+
           <template #item.employee_name="{ item }">
             {{ item.name }} {{ item.lastname }}
           </template>
@@ -126,7 +138,7 @@ onMounted(() => {
             <ButtonComponent v-if="item.status === 'APROB_TESO'" icon="ri-money-dollar-circle-line"
               tooltip="Ver depositos" color="success" @click="showListDepositsModalFunc(item)" />
           </template>
-        </VDataTable>
+        </BaseDatatable>
       </VCol>
     </VRow>
 
@@ -135,8 +147,8 @@ onMounted(() => {
         :mode="modeBudgetModal" />
     </VDialog>
 
-    <VDialog v-model="showListDepositsModal" max-width="1000px">
-      <ListDeposits :viatic="selectedDepositViatic" @close="showListDepositsModal = false" />
+    <VDialog v-model="showListDepositsModal" max-width="1000px" persistent>
+      <ListDeposits :viatic="selectedDepositViatic" @close="showListDepositsModal = false" @cancel="cancelFunc" />
     </VDialog>
   </div>
 </template>
